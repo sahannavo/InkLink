@@ -13,6 +13,7 @@ public class Category {
 
     @NotBlank(message = "Category name is required")
     @Size(max = 100, message = "Category name must be less than 100 characters")
+
     @Column(unique = true, nullable = false)
     private String name;
 

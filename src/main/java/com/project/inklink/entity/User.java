@@ -33,6 +33,10 @@ public class User {
 
     private String bio;
 
+    private String role = "USER";
+
+    private boolean enabled = true;
+
     @Column(name = "profile_picture")
     private String profilePicture;
 
@@ -112,6 +116,22 @@ public class User {
 
     public void setBio(String bio) {
         this.bio = bio;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     public String getProfilePicture() {

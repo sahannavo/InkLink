@@ -23,16 +23,19 @@ public class Story {
 
     @NotBlank(message = "Content is required")
     @Size(min = 100, message = "Story must be at least 100 characters")
+    @Lob
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
+
+    private String excerpt;
+
+    @Column(name = "cover_image")
+    private String coverImage;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", nullable = false)
     @NotNull(message = "Author is required")
     private User author;
-
-    @OneToMany(mappedBy = "story", cascade = CascadeType.ALL)
-    private List<Reaction> reactions = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
@@ -41,6 +44,12 @@ public class Story {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private StoryStatus status = StoryStatus.DRAFT;
+
+    @Column(name = "reading_time") // in minutes
+    private Integer readingTime;
+
+    @Column(name = "view_count")
+    private Integer viewCount = 0;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -51,11 +60,8 @@ public class Story {
     @Column(name = "published_at")
     private LocalDateTime publishedAt;
 
-    @Column(name = "reading_time") // in minutes
-    private Integer readingTime;
-
-    @Column(name = "view_count")
-    private Integer viewCount = 0;
+    @OneToMany(mappedBy = "story", cascade = CascadeType.ALL)
+    private List<Reaction> reactions = new ArrayList<>();
 
     // Constructors
     public Story() {}
@@ -73,12 +79,19 @@ public class Story {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
         calculateReadingTime();
+
+        // Set publishedAt if status is PUBLISHED
+        if (status == StoryStatus.PUBLISHED && publishedAt == null) {
+            publishedAt = LocalDateTime.now();
+        }
     }
 
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
         calculateReadingTime();
+
+        // Set publishedAt if status changes to PUBLISHED
         if (status == StoryStatus.PUBLISHED && publishedAt == null) {
             publishedAt = LocalDateTime.now();
         }
@@ -120,20 +133,28 @@ public class Story {
         calculateReadingTime();
     }
 
+    public String getExcerpt() {
+        return excerpt;
+    }
+
+    public void setExcerpt(String excerpt) {
+        this.excerpt = excerpt;
+    }
+
+    public String getCoverImage() {
+        return coverImage;
+    }
+
+    public void setCoverImage(String coverImage) {
+        this.coverImage = coverImage;
+    }
+
     public User getAuthor() {
         return author;
     }
 
     public void setAuthor(User author) {
         this.author = author;
-    }
-
-    public List<Reaction> getReactions() {
-        return reactions;
-    }
-
-    public void setReactions(List<Reaction> reactions) {
-        this.reactions = reactions;
     }
 
     public Category getCategory() {
@@ -153,6 +174,22 @@ public class Story {
         if (status == StoryStatus.PUBLISHED && publishedAt == null) {
             publishedAt = LocalDateTime.now();
         }
+    }
+
+    public Integer getReadingTime() {
+        return readingTime;
+    }
+
+    public void setReadingTime(Integer readingTime) {
+        this.readingTime = readingTime;
+    }
+
+    public Integer getViewCount() {
+        return viewCount;
+    }
+
+    public void setViewCount(Integer viewCount) {
+        this.viewCount = viewCount;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -179,19 +216,12 @@ public class Story {
         this.publishedAt = publishedAt;
     }
 
-    public Integer getReadingTime() {
-        return readingTime;
+    public List<Reaction> getReactions() {
+        return reactions;
     }
 
-    public void setReadingTime(Integer readingTime) {
-        this.readingTime = readingTime;
+    public void setReactions(List<Reaction> reactions) {
+        this.reactions = reactions;
     }
 
-    public Integer getViewCount() {
-        return viewCount;
-    }
-
-    public void setViewCount(Integer viewCount) {
-        this.viewCount = viewCount;
-    }
 }
