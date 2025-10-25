@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="layout :: layout(~{::title}, ~{::section})">
+<head>
+    <title>Register - InkLink</title>
+</head>
+<body>
+<section th:fragment="content">
+    <div class="auth-container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="auth-card card shadow">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <h2 class="auth-title">Join InkLink</h2>
+                            <p class="text-muted">Create your account and start sharing stories</p>
+                        </div>
+
+                        <!-- Registration Form -->
+                        <form th:action="@{/register}" method="post" th:object="${user}" class="auth-form">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                            <!-- Display Errors -->
+                            <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger">
+                                <ul class="mb-0">
+                                    <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
+                                </ul>
+                            </div>
+
+                            <div class="row">
+                                <!-- Username -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="username" class="form-label">Username</label>
+                                    <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="fas fa-user"></i>
+                                            </span>
+                                        <input type="text"
+                                               class="form-control"
+                                               id="username"
+                                               th:field="*{username}"
+                                               placeholder="Choose a username"
+                                               required>
+                                    </div>
+                                    <div th:if="${#fields.hasErrors('username')}"
+                                         th:errors="*{username}" class="form-text text-danger"></div>
+                                </div>
+
+                                <!-- Email -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="fas fa-envelope"></i>
+                                            </span>
+                                        <input type="email"
+                                               class="form-control"
+                                               id="email"
+                                               th:field="*{email}"
+                                               placeholder="your@email.com"
+                                               required>
+                                    </div>
+                                    <div th:if="${#fields.hasErrors('email')}"
+                                         th:errors="*{email}" class="form-text text-danger"></div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <!-- Password -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="password" class="form-label">Password</label>
+                                    <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="fas fa-lock"></i>
+                                            </span>
+                                        <input type="password"
+                                               class="form-control"
+                                               id="password"
+                                               th:field="*{password}"
+                                               placeholder="Create a password"
+                                               required>
+                                    </div>
+                                    <div class="password-strength mt-2">
+                                        <div class="progress" style="height: 4px;">
+                                            <div class="progress-bar" id="passwordStrength"></div>
+                                        </div>
+                                        <small class="form-text" id="passwordFeedback"></small>
+                                    </div>
+                                    <div th:if="${#fields.hasErrors('password')}"
+                                         th:errors="*{password}" class="form-text text-danger"></div>
+                                </div>
+
+                                <!-- Confirm Password -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="confirmPassword" class="form-label">Confirm Password</label>
+                                    <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="fas fa-lock"></i>
+                                            </span>
+                                        <input type="password"
+                                               class="form-control"
+                                               id="confirmPassword"
+                                               placeholder="Confirm your password"
+                                               required>
+                                    </div>
+                                    <small class="form-text text-danger" id="passwordMatchError"></small>
+                                </div>
+                            </div>
+
+                            <!-- Terms Agreement -->
+                            <div class="mb-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="terms" required>
+                                    <label class="form-check-label" for="terms">
+                                        I agree to the <a href="#" class="text-decoration-none">Terms of Service</a>
+                                        and <a href="#" class="text-decoration-none">Privacy Policy</a>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <button type="submit" class="btn btn-primary w-100 py-2 mb-3" id="registerBtn">
+                                <i class="fas fa-user-plus me-2"></i>
+                                Create Account
+                            </button>
+
+                            <!-- Login Link -->
+                            <div class="text-center">
+                                <p class="mb-0">Already have an account?
+                                    <a th:href="@{/login}" class="text-decoration-none fw-semibold">
+                                        Sign in here
+                                    </a>
+                                </p>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>
