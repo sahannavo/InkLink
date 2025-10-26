@@ -45,7 +45,7 @@ public class Story {
     @Column(nullable = false)
     private StoryStatus status = StoryStatus.DRAFT;
 
-    @Column(name = "reading_time") // in minutes
+    @Column(name = "reading_time")
     private Integer readingTime;
 
     @Column(name = "view_count")
@@ -60,10 +60,9 @@ public class Story {
     @Column(name = "published_at")
     private LocalDateTime publishedAt;
 
-    @OneToMany(mappedBy = "story", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "story", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reaction> reactions = new ArrayList<>();
 
-    // Constructors
     public Story() {}
 
     public Story(String title, String content, User author, Category category) {
@@ -80,7 +79,6 @@ public class Story {
         updatedAt = LocalDateTime.now();
         calculateReadingTime();
 
-        // Set publishedAt if status is PUBLISHED
         if (status == StoryStatus.PUBLISHED && publishedAt == null) {
             publishedAt = LocalDateTime.now();
         }
@@ -91,7 +89,6 @@ public class Story {
         updatedAt = LocalDateTime.now();
         calculateReadingTime();
 
-        // Set publishedAt if status changes to PUBLISHED
         if (status == StoryStatus.PUBLISHED && publishedAt == null) {
             publishedAt = LocalDateTime.now();
         }
@@ -99,15 +96,13 @@ public class Story {
 
     private void calculateReadingTime() {
         if (content != null && !content.trim().isEmpty()) {
-            // Estimate reading time: 200 words per minute
             int wordCount = content.split("\\s+").length;
-            this.readingTime = Math.max(1, (int) Math.ceil(wordCount / 200.0)); // At least 1 minute
+            this.readingTime = Math.max(1, (int) Math.ceil(wordCount / 200.0));
         } else {
             this.readingTime = 0;
         }
     }
 
-    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -223,5 +218,4 @@ public class Story {
     public void setReactions(List<Reaction> reactions) {
         this.reactions = reactions;
     }
-
 }

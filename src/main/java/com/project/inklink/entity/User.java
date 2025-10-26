@@ -30,11 +30,9 @@ public class User {
     private String password;
 
     private String avatarUrl;
-
     private String bio;
 
     private String role = "USER";
-
     private boolean enabled = true;
 
     @Column(name = "profile_picture")
@@ -46,10 +44,12 @@ public class User {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "author", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     private List<Story> stories = new ArrayList<>();
 
-    // Constructors
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Reaction> reactions = new ArrayList<>();
+
     public User() {}
 
     public User(String username, String email, String password) {
@@ -69,7 +69,6 @@ public class User {
         updatedAt = LocalDateTime.now();
     }
 
-    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -164,5 +163,13 @@ public class User {
 
     public void setStories(List<Story> stories) {
         this.stories = stories;
+    }
+
+    public List<Reaction> getReactions() {
+        return reactions;
+    }
+
+    public void setReactions(List<Reaction> reactions) {
+        this.reactions = reactions;
     }
 }
