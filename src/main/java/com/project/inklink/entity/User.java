@@ -27,39 +27,32 @@ public class User {
 
     @NotBlank(message = "Password is required")
     @Size(min = 6, message = "Password must be at least 6 characters")
-    @Column(nullable = false)
     private String password;
 
     private String avatarUrl;
-
     private String bio;
 
-    @Column(nullable = false)
     private String role = "USER";
-
-    @Column(nullable = false)
     private boolean enabled = true;
 
     @Column(name = "profile_picture")
     private String profilePicture;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "author", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     private List<Story> stories = new ArrayList<>();
 
-    // Constructors
-    public User() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Reaction> reactions = new ArrayList<>();
+
+    public User() {}
 
     public User(String username, String email, String password) {
-        this();
         this.username = username;
         this.email = email;
         this.password = password;
@@ -67,12 +60,8 @@ public class User {
 
     @PrePersist
     protected void onCreate() {
-        if (createdAt == null) {
-            createdAt = LocalDateTime.now();
-        }
-        if (updatedAt == null) {
-            updatedAt = LocalDateTime.now();
-        }
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
     }
 
     @PreUpdate
@@ -80,7 +69,6 @@ public class User {
         updatedAt = LocalDateTime.now();
     }
 
-    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -175,5 +163,13 @@ public class User {
 
     public void setStories(List<Story> stories) {
         this.stories = stories;
+    }
+
+    public List<Reaction> getReactions() {
+        return reactions;
+    }
+
+    public void setReactions(List<Reaction> reactions) {
+        this.reactions = reactions;
     }
 }

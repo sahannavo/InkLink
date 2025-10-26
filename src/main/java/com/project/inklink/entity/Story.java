@@ -17,7 +17,7 @@ public class Story {
     private Long id;
 
     @NotBlank(message = "Title is required")
-    @Size(min = 5, max = 200, message = "Title must be between 5 and 200 characters")
+    @Size(max = 200, message = "Title must be less than 200 characters")
     @Column(nullable = false)
     private String title;
 
@@ -27,7 +27,6 @@ public class Story {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
-    @Size(max = 500)
     private String excerpt;
 
     @Column(name = "cover_image")
@@ -46,32 +45,27 @@ public class Story {
     @Column(nullable = false)
     private StoryStatus status = StoryStatus.DRAFT;
 
-    @Column(name = "reading_time") // in minutes
+    @Column(name = "reading_time")
     private Integer readingTime;
 
     @Column(name = "view_count")
     private Integer viewCount = 0;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @Column(name = "published_at")
     private LocalDateTime publishedAt;
 
-    @OneToMany(mappedBy = "story", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "story", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reaction> reactions = new ArrayList<>();
 
-    // Constructors
-    public Story() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
+    public Story() {}
 
     public Story(String title, String content, User author, Category category) {
-        this();
         this.title = title;
         this.content = content;
         this.author = author;
@@ -81,15 +75,10 @@ public class Story {
 
     @PrePersist
     protected void onCreate() {
-        if (createdAt == null) {
-            createdAt = LocalDateTime.now();
-        }
-        if (updatedAt == null) {
-            updatedAt = LocalDateTime.now();
-        }
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
         calculateReadingTime();
 
-        // Set publishedAt if status is PUBLISHED
         if (status == StoryStatus.PUBLISHED && publishedAt == null) {
             publishedAt = LocalDateTime.now();
         }
@@ -100,7 +89,6 @@ public class Story {
         updatedAt = LocalDateTime.now();
         calculateReadingTime();
 
-        // Set publishedAt if status changes to PUBLISHED
         if (status == StoryStatus.PUBLISHED && publishedAt == null) {
             publishedAt = LocalDateTime.now();
         }
@@ -108,15 +96,13 @@ public class Story {
 
     private void calculateReadingTime() {
         if (content != null && !content.trim().isEmpty()) {
-            // Estimate reading time: 200 words per minute
             int wordCount = content.split("\\s+").length;
-            this.readingTime = Math.max(1, (int) Math.ceil(wordCount / 200.0)); // At least 1 minute
+            this.readingTime = Math.max(1, (int) Math.ceil(wordCount / 200.0));
         } else {
             this.readingTime = 0;
         }
     }
 
-    // Getters and Setters
     public Long getId() {
         return id;
     }
