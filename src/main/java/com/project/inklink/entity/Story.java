@@ -17,7 +17,7 @@ public class Story {
     private Long id;
 
     @NotBlank(message = "Title is required")
-    @Size(max = 200, message = "Title must be less than 200 characters")
+    @Size(min = 5, max = 200, message = "Title must be between 5 and 200 characters")
     @Column(nullable = false)
     private String title;
 
@@ -27,6 +27,7 @@ public class Story {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
+    @Size(max = 500)
     private String excerpt;
 
     @Column(name = "cover_image")
@@ -51,10 +52,10 @@ public class Story {
     @Column(name = "view_count")
     private Integer viewCount = 0;
 
-    @Column(name = "created_at", updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
     @Column(name = "published_at")
@@ -64,9 +65,13 @@ public class Story {
     private List<Reaction> reactions = new ArrayList<>();
 
     // Constructors
-    public Story() {}
+    public Story() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
 
     public Story(String title, String content, User author, Category category) {
+        this();
         this.title = title;
         this.content = content;
         this.author = author;
@@ -76,8 +81,12 @@ public class Story {
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+        if (updatedAt == null) {
+            updatedAt = LocalDateTime.now();
+        }
         calculateReadingTime();
 
         // Set publishedAt if status is PUBLISHED
@@ -223,5 +232,4 @@ public class Story {
     public void setReactions(List<Reaction> reactions) {
         this.reactions = reactions;
     }
-
 }

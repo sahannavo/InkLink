@@ -1,19 +1,18 @@
 package com.project.inklink.service;
 
-
-
-
 import com.project.inklink.entity.Category;
 import com.project.inklink.repository.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.annotation.PostConstruct;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional
 public class CategoryService {
 
     @Autowired
@@ -22,9 +21,9 @@ public class CategoryService {
     @PostConstruct
     public void initDefaultCategories() {
         List<String> defaultCategories = Arrays.asList(
-                "Fiction", "Non-Fiction", "Poetry", "Mystery",
-                "Romance", "Science Fiction", "Fantasy", "Horror",
-                "Biography", "History", "Self-Help", "Travel"
+        "Fiction", "Non-Fiction", "Poetry", "Mystery",
+        "Romance", "Science Fiction", "Fantasy", "Horror",
+        "Biography", "History", "Self-Help", "Travel"
         );
 
         for (String categoryName : defaultCategories) {
@@ -35,6 +34,7 @@ public class CategoryService {
                 categoryRepository.save(category);
             }
         }
+        System.out.println("Default categories initialized successfully!");
     }
 
     public List<Category> getAllCategories() {
@@ -43,5 +43,9 @@ public class CategoryService {
 
     public Optional<Category> findByName(String name) {
         return categoryRepository.findByName(name);
+    }
+
+    public Category saveCategory(Category category) {
+        return categoryRepository.save(category);
     }
 }

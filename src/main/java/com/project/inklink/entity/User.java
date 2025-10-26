@@ -27,32 +27,39 @@ public class User {
 
     @NotBlank(message = "Password is required")
     @Size(min = 6, message = "Password must be at least 6 characters")
+    @Column(nullable = false)
     private String password;
 
     private String avatarUrl;
 
     private String bio;
 
+    @Column(nullable = false)
     private String role = "USER";
 
+    @Column(nullable = false)
     private boolean enabled = true;
 
     @Column(name = "profile_picture")
     private String profilePicture;
 
-    @Column(name = "created_at", updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL)
     private List<Story> stories = new ArrayList<>();
 
     // Constructors
-    public User() {}
+    public User() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
 
     public User(String username, String email, String password) {
+        this();
         this.username = username;
         this.email = email;
         this.password = password;
@@ -60,8 +67,12 @@ public class User {
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+        if (updatedAt == null) {
+            updatedAt = LocalDateTime.now();
+        }
     }
 
     @PreUpdate

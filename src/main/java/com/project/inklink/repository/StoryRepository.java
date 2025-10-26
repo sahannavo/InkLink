@@ -14,9 +14,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
-public interface StoryRepository extends JpaRepository<com.project.inklink.entity.Story, Long> {
-    // Basic methods - we'll add custom queries tomorrow
-    Long countByAuthorIdAndStatus(Long authorId, com.project.inklink.enums.StoryStatus status);
+public interface StoryRepository extends JpaRepository<Story, Long> {
+
+    // Basic methods
+    Long countByAuthorIdAndStatus(Long authorId, StoryStatus status);
 
     // Home Page: "slow profile loop" - Published stories with pagination
     @Query("SELECT s FROM Story s WHERE s.status = 'PUBLISHED' ORDER BY s.publishedAt DESC")
@@ -37,10 +38,14 @@ public interface StoryRepository extends JpaRepository<com.project.inklink.entit
             "ORDER BY s.viewCount DESC, s.publishedAt DESC")
     List<Story> findTrendingStories(@Param("weekAgo") LocalDateTime weekAgo, Pageable pageable);
 
-    // Search for homepage search functionality
-    @Query("SELECT s FROM Story s WHERE s.status = 'PUBLISHED' AND " +
+    // CORRECTED: Fixed table name from 'story' to 'stories'
+    @Query(value = "SELECT * FROM stories s WHERE s.status = 'PUBLISHED' AND " +
             "(LOWER(s.title) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
-            "LOWER(s.content) LIKE LOWER(CONCAT('%', :query, '%')))")
+            "LOWER(s.content) LIKE LOWER(CONCAT('%', :query, '%')))",
+            countQuery = "SELECT COUNT(*) FROM stories s WHERE s.status = 'PUBLISHED' AND " +
+                    "(LOWER(s.title) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+                    "LOWER(s.content) LIKE LOWER(CONCAT('%', :query, '%')))",
+            nativeQuery = true)
     Page<Story> searchByTitleOrContent(@Param("query") String query, Pageable pageable);
 
     // Filter by date range for "Date time" feature

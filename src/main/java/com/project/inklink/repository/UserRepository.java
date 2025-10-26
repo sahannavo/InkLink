@@ -1,6 +1,7 @@
 package com.project.inklink.repository;
 
 
+import com.project.inklink.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,4 +21,5 @@ public interface UserRepository extends JpaRepository<com.project.inklink.entity
     // For user profile stats
     @Query("SELECT COUNT(s) FROM Story s WHERE s.author.id = :userId AND s.status = 'PUBLISHED'")
     Long countPublishedStoriesByUser(@Param("userId") Long userId);
+
 }
