@@ -33,27 +33,21 @@
             <div id="featuredCarousel" class="carousel slide" data-bs-ride="carousel">
                 <div class="carousel-inner">
                     <!-- Carousel items will be populated dynamically -->
-                    <div class="carousel-item active">
+                    <div class="carousel-item active" th:each="story, stat : ${featuredStories}" th:if="${stat.first}">
                         <div class="row justify-content-center">
                             <div class="col-md-8">
                                 <div class="card featured-card">
                                     <div class="card-body text-center">
-                                        <h3>Featured Story Title</h3>
-                                        <p class="text-muted">By Author Name</p>
-                                        <p>Story excerpt will appear here...</p>
-                                        <a href="#" class="btn btn-primary">Read Story</a>
+                                        <h3 th:text="${story.title}">Featured Story Title</h3>
+                                        <p class="text-muted" th:text="'By ' + ${story.author.username}">By Author Name</p>
+                                        <p th:text="${story.excerpt}">Story excerpt will appear here...</p>
+                                        <a th:href="@{/stories/{id}(id=${story.id})}" class="btn btn-primary">Read Story</a>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#featuredCarousel" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon"></span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#featuredCarousel" data-bs-slide="next">
-                    <span class="carousel-control-next-icon"></span>
-                </button>
             </div>
         </div>
     </div>
@@ -63,11 +57,11 @@
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-auto">
-                    <button class="btn btn-outline-primary mx-1 active">All</button>
-                    <button class="btn btn-outline-primary mx-1">Fiction</button>
-                    <button class="btn btn-outline-primary mx-1">Non-Fiction</button>
-                    <button class="btn btn-outline-primary mx-1">Poetry</button>
-                    <button class="btn btn-outline-primary mx-1">Mystery</button>
+                    <a th:href="@{/}" class="btn btn-outline-primary mx-1 active">All</a>
+                    <a th:each="category : ${categories}"
+                       th:href="@{/(category=${category.name})}"
+                       class="btn btn-outline-primary mx-1"
+                       th:text="${category.name}">Category</a>
                 </div>
             </div>
         </div>
@@ -79,33 +73,36 @@
             <h2 class="mb-4">Recent Stories</h2>
             <div class="row" id="storiesGrid">
                 <!-- Story cards will be populated here -->
-                <div class="col-md-6 col-lg-4 mb-4">
+                <div class="col-md-6 col-lg-4 mb-4" th:each="story : ${stories}">
                     <div class="card story-card h-100">
                         <div class="card-body">
-                            <h5 class="card-title">Story Title</h5>
-                            <p class="card-text text-muted">By Author Name</p>
-                            <p class="card-text">Story excerpt will appear here. This is a preview of the story content...</p>
+                            <h5 class="card-title" th:text="${story.title}">Story Title</h5>
+                            <p class="card-text text-muted" th:text="'By ' + ${story.author.username}">By Author Name</p>
+                            <p class="card-text" th:text="${story.excerpt}">Story excerpt will appear here. This is a preview of the story content...</p>
                             <div class="story-meta d-flex justify-content-between text-muted">
-                                <small>5 min read</small>
-                                <small>25 likes</small>
+                                <small th:text="${story.readingTime} + ' min read'">5 min read</small>
+                                <small th:text="${#aggregates.sum(story.reactions.?[type.name() == 'LIKE'].![type])} + ' likes'">25 likes</small>
                             </div>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <a th:href="@{/stories/{id}(id=${story.id})}" class="btn btn-outline-primary btn-sm">Read More</a>
                         </div>
                     </div>
                 </div>
-                <!-- More story cards -->
             </div>
 
             <!-- Pagination -->
-            <nav aria-label="Story pagination">
+            <nav aria-label="Story pagination" th:if="${totalPages > 1}">
                 <ul class="pagination justify-content-center">
-                    <li class="page-item disabled">
-                        <a class="page-link" href="#">Previous</a>
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link" th:href="@{/(page=${currentPage - 1})}">Previous</a>
                     </li>
-                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                    <li class="page-item">
-                        <a class="page-link" href="#">Next</a>
+                    <li th:each="page : ${#numbers.sequence(0, totalPages - 1)}"
+                        class="page-item" th:classappend="${page == currentPage} ? 'active'">
+                        <a class="page-link" th:href="@{/(page=${page})}" th:text="${page + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                        <a class="page-link" th:href="@{/(page=${currentPage + 1})}">Next</a>
                     </li>
                 </ul>
             </nav>
