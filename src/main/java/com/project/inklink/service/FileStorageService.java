@@ -19,6 +19,9 @@ import java.util.UUID;
 public class FileStorageService {
 
     private final Path fileStorageLocation;
+    private final List<String> allowedContentTypes = Arrays.asList(
+            "image/jpeg", "image/png", "image/gif", "image/webp"
+    );
 
     @Autowired
     public FileStorageService(FileStorageProperties fileStorageProperties) {
@@ -31,10 +34,6 @@ public class FileStorageService {
             throw new RuntimeException("Could not create the directory where the uploaded files will be stored.", ex);
         }
     }
-
-    private final List<String> allowedContentTypes = Arrays.asList(
-            "image/jpeg", "image/png", "image/gif", "image/webp"
-    );
 
     public String storeFile(MultipartFile file) {
         // Validate file

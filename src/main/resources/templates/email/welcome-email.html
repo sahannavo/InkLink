@@ -2,52 +2,133 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <title>Welcome to InkLink</title>
     <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #0d6efd, #4a00e0); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-        .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px; }
-        .button { display: inline-block; padding: 12px 30px; background: #0d6efd; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
-        .footer { text-align: center; margin-top: 30px; color: #6c757d; font-size: 14px; }
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+        }
+        .content {
+            padding: 40px 30px;
+            background: #ffffff;
+        }
+        .footer {
+            text-align: center;
+            padding: 30px 20px;
+            color: #666;
+            font-size: 14px;
+            background: #f8f9fa;
+            border-radius: 0 0 10px 10px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 14px 32px;
+            background: linear-gradient(135deg, #0d6efd, #4a00e0);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(13, 110, 253, 0.4);
+        }
+        ul {
+            margin: 20px 0;
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 10px;
+            padding-left: 5px;
+        }
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 2.5em;
+        }
+        h2 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        .emoji {
+            font-size: 1.2em;
+            margin-right: 8px;
+        }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="header">
         <h1>Welcome to InkLink! 📚</h1>
+        <p style="font-size: 1.2em; margin: 0; opacity: 0.9;">Where stories come to life</p>
     </div>
+
     <div class="content">
         <h2>Hello, <span th:text="${username}">User</span>! 👋</h2>
 
-        <p th:text="${welcomeMessage}">
+        <p th:text="${welcomeMessage}" style="font-size: 1.1em; font-weight: 500;">
             We're excited to have you join our community of storytellers!
         </p>
 
-        <p>Get ready to:</p>
+        <p>With InkLink, you can:</p>
         <ul>
             <li>📖 Share your amazing stories with the world</li>
-            <li>🌟 Discover inspiring stories from other writers</li>
-            <li>💬 Connect with fellow story enthusiasts</li>
-            <li>🎯 Build your audience and get feedback</li>
+            <li>🌟 Discover inspiring content from other writers</li>
+            <li>💬 Connect with like-minded storytellers</li>
+            <li>🎯 Build your audience and get valuable feedback</li>
         </ul>
 
+        <p style="text-align: center; font-size: 1.1em; font-weight: 500;">
+            Ready to start your storytelling journey?
+        </p>
+
         <div style="text-align: center;">
-            <a href="http://localhost:8080/stories/create" class="button">
+            <a href="http://localhost:8080/stories/create" class="btn">
                 Write Your First Story
             </a>
         </div>
 
-        <p>Need help getting started? Check out our <a href="http://localhost:8080/help">writing guide</a> for tips and inspiration.</p>
+        <p style="text-align: center;">
+            Need help getting started? Check out our
+            <a href="http://localhost:8080/help" style="color: #0d6efd; text-decoration: none; font-weight: 500;">
+                writing guide
+            </a>
+            for tips and inspiration.
+        </p>
 
-        <div class="footer">
-            <p>Happy writing!<br>The InkLink Team</p>
-            <p>
-                <small>
-                    You're receiving this email because you recently created an account on InkLink.<br>
-                    If this wasn't you, please <a href="http://localhost:8080/support">contact support</a>.
-                </small>
-            </p>
-        </div>
+        <p>If you have any questions, feel free to reply to this email.</p>
+
+        <p style="font-size: 1.1em; font-weight: 500;">Happy writing!<br>The InkLink Team</p>
+    </div>
+
+    <div class="footer">
+        <p>&copy; 2025 InkLink. All rights reserved.</p>
+        <p>
+            <small>
+                You're receiving this email because you created an account on InkLink.<br>
+                If this wasn't you, please <a href="http://localhost:8080/support" style="color: #666;">contact support</a>.
+            </small>
+        </p>
     </div>
 </div>
 </body>
