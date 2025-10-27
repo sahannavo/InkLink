@@ -1,4 +1,4 @@
-package com.project.inklink.config;
+package com.project.inklink.controller;
 
 import com.project.inklink.entity.User;
 import com.project.inklink.service.FileStorageService;
@@ -54,7 +54,7 @@ public class FileUploadController {
 
             // Update user profile picture
             user.setProfilePicture(fileName);
-            userService.saveUser(user); // You'll need to add this method to UserService
+            userService.saveUser(user);
 
             Map<String, String> response = new HashMap<>();
             response.put("message", "Avatar uploaded successfully");

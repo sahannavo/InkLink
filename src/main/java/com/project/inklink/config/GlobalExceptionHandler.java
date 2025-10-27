@@ -2,10 +2,12 @@ package com.project.inklink.config;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.ModelAndView;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,9 +32,26 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(AccessDeniedException.class)
+    public ModelAndView handleAccessDeniedException(AccessDeniedException ex) {
+        ModelAndView mav = new ModelAndView();
+        mav.addObject("error", "You don't have permission to access this resource.");
+        mav.addObject("message", ex.getMessage());
+        mav.setViewName("error/403");
+        return mav;
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleGenericException(Exception ex) {
-        return new ResponseEntity<>("An error occurred: " + ex.getMessage(),
-                HttpStatus.INTERNAL_SERVER_ERROR);
+    public ModelAndView handleGenericException(Exception ex) {
+        ModelAndView mav = new ModelAndView();
+        mav.addObject("error", "An unexpected error occurred");
+        mav.addObject("message", ex.getMessage());
+        mav.setViewName("error/500");
+        return mav;
     }
 }

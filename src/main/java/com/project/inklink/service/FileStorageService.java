@@ -25,8 +25,9 @@ public class FileStorageService {
 
     @Autowired
     public FileStorageService(FileStorageProperties fileStorageProperties) {
-        this.fileStorageLocation = Paths.get(fileStorageProperties.getUploadDir())
-                .toAbsolutePath().normalize();
+        // FIXED: Added null check and default value
+        String uploadDir = fileStorageProperties != null ? fileStorageProperties.getUploadDir() : "./uploads";
+        this.fileStorageLocation = Paths.get(uploadDir).toAbsolutePath().normalize();
 
         try {
             Files.createDirectories(this.fileStorageLocation);
@@ -37,7 +38,7 @@ public class FileStorageService {
 
     public String storeFile(MultipartFile file) {
         // Validate file
-        if (file.isEmpty()) {
+        if (file == null || file.isEmpty()) {
             throw new RuntimeException("File is empty");
         }
 

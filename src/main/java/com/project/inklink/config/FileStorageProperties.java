@@ -1,14 +1,12 @@
 package com.project.inklink.config;
 
-
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Configuration;
 
-@Component
-@ConfigurationProperties(prefix = "file")
+@Configuration
+@ConfigurationProperties(prefix = "app.file")
 public class FileStorageProperties {
-    private String uploadDir;
+    private String uploadDir = "./uploads";
 
     public String getUploadDir() {
         return uploadDir;

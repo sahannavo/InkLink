@@ -100,7 +100,7 @@ public class Story {
     }
 
     // Enhanced reading time calculation
-    private void calculateReadingTime() {
+    public void calculateReadingTime() {
         if (content != null && !content.trim().isEmpty()) {
             // More accurate word count
             String cleanedContent = content.trim().replaceAll("\\s+", " ");

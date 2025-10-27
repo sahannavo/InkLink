@@ -13,13 +13,26 @@ import org.thymeleaf.context.Context;
 @Service
 public class EmailService {
 
-    @Autowired
     private JavaMailSender mailSender;
-
-    @Autowired
     private TemplateEngine templateEngine;
 
+    // Use @Autowired(required = false) to make dependencies optional
+    @Autowired(required = false)
+    public void setMailSender(JavaMailSender mailSender) {
+        this.mailSender = mailSender;
+    }
+
+    @Autowired(required = false)
+    public void setTemplateEngine(TemplateEngine templateEngine) {
+        this.templateEngine = templateEngine;
+    }
+
     public void sendWelcomeEmail(String to, String username) {
+        if (mailSender == null || templateEngine == null) {
+            System.out.println("Email service not configured. Would send welcome email to: " + to);
+            return;
+        }
+
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -44,6 +57,11 @@ public class EmailService {
     }
 
     public void sendSimpleMessage(String to, String subject, String text) {
+        if (mailSender == null) {
+            System.out.println("Email service not configured. Would send message to: " + to);
+            return;
+        }
+
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
         message.setSubject(subject);
