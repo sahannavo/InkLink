@@ -77,32 +77,58 @@ public class Story {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
-        calculateReadingTime();
-
-        if (status == StoryStatus.PUBLISHED && publishedAt == null) {
-            publishedAt = LocalDateTime.now();
-        }
+        validate();
     }
 
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
-        calculateReadingTime();
+        validate();
+    }
 
+    protected void validate() {
         if (status == StoryStatus.PUBLISHED && publishedAt == null) {
             publishedAt = LocalDateTime.now();
         }
+
+        // Business rule: Published stories must have at least 100 characters
+        if (status == StoryStatus.PUBLISHED && content != null && content.trim().length() < 100) {
+            throw new IllegalStateException("Published stories must be at least 100 characters long");
+        }
+
+        calculateReadingTime();
     }
 
+    // Enhanced reading time calculation
     private void calculateReadingTime() {
         if (content != null && !content.trim().isEmpty()) {
-            int wordCount = content.split("\\s+").length;
+            // More accurate word count
+            String cleanedContent = content.trim().replaceAll("\\s+", " ");
+            int wordCount = cleanedContent.isEmpty() ? 0 : cleanedContent.split("\\s+").length;
+
+            // Average reading speed: 200 words per minute
             this.readingTime = Math.max(1, (int) Math.ceil(wordCount / 200.0));
         } else {
             this.readingTime = 0;
         }
     }
 
+    // Business method to increment view count
+    public void incrementViewCount() {
+        if (this.viewCount == null) {
+            this.viewCount = 0;
+        }
+        this.viewCount++;
+    }
+
+    // Business method to check if story can be published
+    public boolean canPublish() {
+        return this.status == StoryStatus.DRAFT &&
+                this.content != null &&
+                this.content.trim().length() >= 100;
+    }
+
+    // Getters and Setters
     public Long getId() {
         return id;
     }

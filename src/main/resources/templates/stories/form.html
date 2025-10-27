@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="layout :: layout(~{::title}, ~{::section})">
+<head>
+    <title th:text="${story?.id ? 'Edit Story' : 'Write New Story'}">Write Story - InkLink</title>
+</head>
+<body>
+<section th:fragment="content">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="mb-0" th:text="${story?.id ? 'Edit Story' : 'Write New Story'}">
+                            Write New Story
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <!-- Story Form -->
+                        <form th:action="${story?.id ? '/stories/' + story.id + '/edit' : '/stories/create'}"
+                              method="post" th:object="${story}" enctype="multipart/form-data">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                            <!-- Title -->
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Story Title</label>
+                                <input type="text" class="form-control form-control-lg" id="title"
+                                       th:field="*{title}" placeholder="Enter your story title" required>
+                                <div th:if="${#fields.hasErrors('title')}" th:errors="*{title}"
+                                     class="form-text text-danger"></div>
+                            </div>
+
+                            <!-- Excerpt -->
+                            <div class="mb-3">
+                                <label for="excerpt" class="form-label">Story Excerpt</label>
+                                <textarea class="form-control" id="excerpt" th:field="*{excerpt}"
+                                          rows="3" placeholder="Brief description of your story"
+                                          maxlength="255"></textarea>
+                                <div class="form-text">
+                                    <span id="excerptCount">0</span>/255 characters
+                                </div>
+                                <div th:if="${#fields.hasErrors('excerpt')}" th:errors="*{excerpt}"
+                                     class="form-text text-danger"></div>
+                            </div>
+
+                            <!-- Category -->
+                            <div class="mb-3">
+                                <label for="category" class="form-label">Category</label>
+                                <select class="form-select" id="category" th:field="*{category}">
+                                    <option value="">Select a category</option>
+                                    <option th:each="cat : ${categories}"
+                                            th:value="${cat.id}"
+                                            th:text="${cat.name}"
+                                            th:selected="${story?.category?.id == cat.id}">
+                                    </option>
+                                </select>
+                                <div th:if="${#fields.hasErrors('category')}" th:errors="*{category}"
+                                     class="form-text text-danger"></div>
+                            </div>
+
+                            <!-- Content -->
+                            <div class="mb-4">
+                                <label for="content" class="form-label">Story Content</label>
+                                <div class="editor-toolbar mb-2">
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <button type="button" class="btn btn-outline-secondary" onclick="formatText('bold')">
+                                            <i class="fas fa-bold"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary" onclick="formatText('italic')">
+                                            <i class="fas fa-italic"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary" onclick="formatText('underline')">
+                                            <i class="fas fa-underline"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary" onclick="insertHeading()">
+                                            <i class="fas fa-heading"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary" onclick="insertImage()">
+                                            <i class="fas fa-image"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary" onclick="insertLink()">
+                                            <i class="fas fa-link"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <textarea class="form-control" id="content" th:field="*{content}"
+                                          rows="15" placeholder="Write your story here..." required></textarea>
+                                <div class="form-text">
+                                    <span id="contentCount">0</span> characters
+                                    <span class="mx-2">•</span>
+                                    <span id="readingTime">0 min read</span>
+                                </div>
+                                <div th:if="${#fields.hasErrors('content')}" th:errors="*{content}"
+                                     class="form-text text-danger"></div>
+                            </div>
+
+                            <!-- Featured Image -->
+                            <div class="mb-4">
+                                <label for="featuredImage" class="form-label">Featured Image</label>
+                                <input type="file" class="form-control" id="featuredImage"
+                                       name="featuredImage" accept="image/*">
+                                <div class="form-text">
+                                    Optional: Add a featured image to make your story stand out
+                                </div>
+                            </div>
+
+                            <!-- Tags -->
+                            <div class="mb-4">
+                                <label for="tags" class="form-label">Tags</label>
+                                <input type="text" class="form-control" id="tags"
+                                       placeholder="Add tags separated by commas">
+                                <div class="form-text">
+                                    Add relevant tags to help readers discover your story
+                                </div>
+                            </div>
+
+                            <!-- Form Actions -->
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="saveDraft()">
+                                        Save Draft
+                                    </button>
+                                </div>
+                                <div>
+                                    <a th:href="@{/stories}" class="btn btn-secondary me-2">Cancel</a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <span th:text="${story?.id ? 'Update Story' : 'Publish Story'}">
+                                            Publish Story
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const excerptTextarea = document.getElementById('excerpt');
+        const contentTextarea = document.getElementById('content');
+
+        // Character counters
+        function updateCounters() {
+            document.getElementById('excerptCount').textContent = excerptTextarea.value.length;
+            document.getElementById('contentCount').textContent = contentTextarea.value.length;
+
+            // Calculate reading time (average reading speed: 200 words per minute)
+            const wordCount = contentTextarea.value.split(/\s+/).filter(word => word.length > 0).length;
+            const readingTime = Math.ceil(wordCount / 200);
+            document.getElementById('readingTime').textContent = readingTime + ' min read';
+        }
+
+        excerptTextarea.addEventListener('input', updateCounters);
+        contentTextarea.addEventListener('input', updateCounters);
+        updateCounters(); // Initialize counters
+
+        // Auto-save draft
+        let autoSaveTimer;
+        contentTextarea.addEventListener('input', function() {
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(saveDraft, 3000);
+        });
+    });
+
+    function formatText(command) {
+        document.getElementById('content').focus();
+        document.execCommand(command, false, null);
+    }
+
+    function insertHeading() {
+        const content = document.getElementById('content');
+        const selection = content.value.substring(content.selectionStart, content.selectionEnd);
+        const heading = `<h3>${selection}</h3>`;
+        content.setRangeText(heading, content.selectionStart, content.selectionEnd, 'select');
+    }
+
+    function insertImage() {
+        const url = prompt('Enter image URL:');
+        if (url) {
+            const img = `<img src="${url}" alt="" style="max-width: 100%; height: auto;">`;
+            document.getElementById('content').focus();
+            document.execCommand('insertHTML', false, img);
+        }
+    }
+
+    function insertLink() {
+        const url = prompt('Enter URL:');
+        if (url) {
+            document.execCommand('createLink', false, url);
+        }
+    }
+
+    function saveDraft() {
+        const formData = new FormData();
+        formData.append('title', document.getElementById('title').value);
+        formData.append('content', document.getElementById('content').value);
+        formData.append('excerpt', document.getElementById('excerpt').value);
+
+        fetch('/api/stories/draft', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]').content
+            }
+        })
+            .then(response => {
+                if (response.ok) {
+                    showNotification('Draft saved successfully!', 'success');
+                }
+            })
+            .catch(error => {
+                console.error('Error saving draft:', error);
+                showNotification('Error saving draft', 'error');
+            });
+    }
+
+    function showNotification(message, type) {
+        // Simple notification implementation
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show`;
+        notification.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.querySelector('.card-body').prepend(notification);
+
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+</script>
+</body>
+</html>

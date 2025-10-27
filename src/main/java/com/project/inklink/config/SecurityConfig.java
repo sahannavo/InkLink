@@ -17,8 +17,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/", "/home", "/register", "/login", "/css/**", "/js/**", "/images/**").permitAll()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/", "/home", "/register", "/login", "/css/", "/js/", "/images/").permitAll()
+                        .requestMatchers("/admin/").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -41,7 +41,7 @@ public class SecurityConfig {
                 )
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                        .ignoringRequestMatchers("/api/**") // Optional: disable CSRF for API endpoints
+                        .ignoringRequestMatchers("/api/") // Optional: disable CSRF for API endpoints
                 );
 
         return http.build();
@@ -50,5 +50,5 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
-    }
+}
 }

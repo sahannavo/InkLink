@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="layout :: layout(~{::title}, ~{::section})">
+<head>
+    <title th:text="${profileUser.username + ' - Profile'}">User Profile - InkLink</title>
+</head>
+<body>
+<section th:fragment="content">
+    <div class="container py-5">
+        <div class="row">
+            <!-- Profile Sidebar -->
+            <div class="col-lg-4 mb-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <!-- Profile Picture -->
+                        <div class="mb-3">
+                            <img th:src="${profileUser.profilePicture != null ? '/api/files/avatar/' + profileUser.profilePicture : '/images/avatar-placeholder.png'}"
+                                 alt="Profile" class="rounded-circle" width="120" height="120">
+                            <div th:if="${#authorization.expression('isAuthenticated()') and user.id == profileUser.id}"
+                                 class="mt-2">
+                                <button class="btn btn-sm btn-outline-primary" onclick="document.getElementById('avatarInput').click()">
+                                    <i class="fas fa-camera me-1"></i> Change Photo
+                                </button>
+                                <input type="file" id="avatarInput" accept="image/*" style="display: none;"
+                                       onchange="uploadAvatar(this.files[0])">
+                            </div>
+                        </div>
+
+                        <!-- User Info -->
+                        <h4 th:text="${profileUser.username}">Username</h4>
+                        <p class="text-muted" th:text="${profileUser.bio ?: 'No bio yet'}">User bio</p>
+
+                        <!-- Stats -->
+                        <div class="row text-center mt-4">
+                            <div class="col-4">
+                                <h5 th:text="${storyCount}">0</h5>
+                                <small class="text-muted">Stories</small>
+                            </div>
+                            <div class="col-4">
+                                <h5 th:text="${followerCount}">0</h5>
+                                <small class="text-muted">Followers</small>
+                            </div>
+                            <div class="col-4">
+                                <h5 th:text="${followingCount}">0</h5>
+                                <small class="text-muted">Following</small>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="mt-4">
+                            <div th:if="${#authorization.expression('isAuthenticated()') and user.id != profileUser.id}">
+                                <button th:if="${!isFollowing}"
+                                        class="btn btn-primary w-100 mb-2"
+                                        onclick="followUser([[${profileUser.id}]])">
+                                    <i class="fas fa-user-plus me-1"></i> Follow
+                                </button>
+                                <button th:if="${isFollowing}"
+                                        class="btn btn-outline-secondary w-100 mb-2"
+                                        onclick="unfollowUser([[${profileUser.id}]])">
+                                    <i class="fas fa-user-minus me-1"></i> Following
+                                </button>
+                            </div>
+
+                            <div th:if="${#authorization.expression('isAuthenticated()') and user.id == profileUser.id}">
+                                <button class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                                    <i class="fas fa-edit me-1"></i> Edit Profile
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-lg-8">
+                <!-- Bio Section -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">About</h5>
+                        <p th:text="${profileUser.bio ?: 'This user hasn\'t written a bio yet.'}">
+                            User bio will appear here...
+                        </p>
+                        <div class="text-muted">
+                            <small>
+                                <i class="fas fa-calendar me-1"></i>
+                                Joined <span th:text="${#temporals.format(profileUser.createdAt, 'MMMM yyyy')}">Date</span>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User's Stories -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Stories</h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${#lists.isEmpty(userStories)}" class="text-center py-4 text-muted">
+                            <i class="fas fa-book-open fa-2x mb-3"></i>
+                            <p th:if="${#authorization.expression('isAuthenticated()') and user.id == profileUser.id}">
+                                You haven't written any stories yet.
+                                <a th:href="@{/stories/create}">Start writing your first story!</a>
+                            </p>
+                            <p th:unless="${#authorization.expression('isAuthenticated()') and user.id == profileUser.id}">
+                                This user hasn't published any stories yet.
+                            </p>
+                        </div>
+
+                        <div class="list-group list-group-flush">
+                            <div th:each="story : ${userStories}" class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">
+                                            <a th:href="@{/stories/{id}(id=${story.id})}" th:text="${story.title}">
+                                                Story Title
+                                            </a>
+                                        </h6>
+                                        <p class="mb-1 text-muted" th:text="${story.excerpt}">
+                                            Story excerpt...
+                                        </p>
+                                        <small class="text-muted">
+                                            <span th:text="${#temporals.format(story.publishedAt, 'MMM dd, yyyy')}">Date</span>
+                                            <span class="mx-1">•</span>
+                                            <span th:text="${story.readingTime} + ' min read'">5 min</span>
+                                            <span class="mx-1">•</span>
+                                            <span th:text="${#aggregates.sum(story.reactions.?[type.name() == 'LIKE'].![type])} + ' likes'">25 likes</span>
+                                        </small>
+                                    </div>
+                                    <div th:if="${#authorization.expression('isAuthenticated()') and user.id == profileUser.id}">
+                                        <a th:href="@{/stories/{id}/edit(id=${story.id})}"
+                                           class="btn btn-sm btn-outline-primary me-1">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div class="modal fade" id="editProfileModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Profile</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form th:action="@{/profile/update}" method="post" enctype="multipart/form-data">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                    <div class="modal-body">
+                        <!-- Bio -->
+                        <div class="mb-3">
+                            <label for="bio" class="form-label">Bio</label>
+                            <textarea class="form-control" id="bio" name="bio" rows="4"
+                                      th:value="${profileUser.bio}"
+                                      placeholder="Tell us about yourself..."></textarea>
+                        </div>
+
+                        <!-- Avatar Upload -->
+                        <div class="mb-3">
+                            <label for="avatar" class="form-label">Profile Picture</label>
+                            <input type="file" class="form-control" id="avatar" name="avatar" accept="image/*">
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    function uploadAvatar(file) {
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('avatar', file);
+
+        fetch('/api/user/avatar', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]').content
+            }
+        })
+            .then(response => {
+                if (response.ok) {
+                    location.reload();
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function followUser(userId) {
+        fetch('/api/user/' + userId + '/follow', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]').content
+            }
+        })
+            .then(response => {
+                if (response.ok) {
+                    location.reload();
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function unfollowUser(userId) {
+        fetch('/api/user/' + userId + '/unfollow', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]').content
+            }
+        })
+            .then(response => {
+                if (response.ok) {
+                    location.reload();
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+</script>
+</body>
+</html>

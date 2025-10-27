@@ -34,6 +34,9 @@
                 <li class="nav-item">
                     <a class="nav-link" th:href="@{/stories}">Stories</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/categories}">Categories</a>
+                </li>
             </ul>
 
             <ul class="navbar-nav">
@@ -47,7 +50,8 @@
                 <!-- Authenticated User Menu -->
                 <li class="nav-item dropdown" th:unless="${#authorization.expression('isAnonymous()')}">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                        <img th:src="@{/images/avatar-placeholder.png}" alt="User" class="rounded-circle" width="32" height="32">
+                        <img th:src="${user.profilePicture != null ? '/api/files/avatar/' + user.profilePicture : '/images/avatar-placeholder.png'}"
+                             alt="User" class="rounded-circle" width="32" height="32">
                         <span th:text="${#authentication.principal.username}" class="ms-1"></span>
                     </a>
                     <ul class="dropdown-menu">

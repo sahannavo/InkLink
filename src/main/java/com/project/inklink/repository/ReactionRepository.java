@@ -35,4 +35,22 @@ public interface ReactionRepository extends JpaRepository<Reaction, Long> {
     List<Long> findUserReactionsForStories(@Param("userId") Long userId,
                                            @Param("type") ReactionType type,
                                            @Param("storyIds") List<Long> storyIds);
+
+    // Additional methods for analytics
+    @Query("SELECT COUNT(r) FROM Reaction r WHERE r.story.id = :storyId AND r.type = 'LIKE'")
+    Long countLikesByStoryId(@Param("storyId") Long storyId);
+
+    @Query("SELECT COUNT(r) FROM Reaction r WHERE r.story.id = :storyId AND r.type = 'BOOKMARK'")
+    Long countBookmarksByStoryId(@Param("storyId") Long storyId);
+
+    // Check if user has reacted to a story
+    @Query("SELECT CASE WHEN COUNT(r) > 0 THEN true ELSE false END FROM Reaction r " +
+            "WHERE r.user.id = :userId AND r.story.id = :storyId AND r.type = :type")
+    Boolean existsByUserAndStoryAndType(@Param("userId") Long userId,
+                                        @Param("storyId") Long storyId,
+                                        @Param("type") ReactionType type);
+
+    // Get user's liked stories
+    @Query("SELECT r.story FROM Reaction r WHERE r.user.id = :userId AND r.type = 'LIKE'")
+    Page<Story> findLikedStoriesByUser(@Param("userId") Long userId, Pageable pageable);
 }

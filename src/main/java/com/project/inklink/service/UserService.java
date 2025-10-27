@@ -1,6 +1,6 @@
 package com.project.inklink.service;
 
-import com.project.inklink.entity.User; // Fixed import
+import com.project.inklink.entity.User;
 import com.project.inklink.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,8 +19,10 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public User registerUser(User user) {
+    @Autowired
+    private EmailService emailService;
 
+    public User registerUser(User user) {
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new RuntimeException("Email already exists: " + user.getEmail());
         }
@@ -30,6 +32,20 @@ public class UserService {
         }
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        User savedUser = userRepository.save(user);
+
+        // Send welcome email
+        try {
+            emailService.sendWelcomeEmail(savedUser.getEmail(), savedUser.getUsername());
+        } catch (Exception e) {
+            // Log the error but don't fail registration
+            System.err.println("Failed to send welcome email: " + e.getMessage());
+        }
+
+        return savedUser;
+    }
+
+    public User saveUser(User user) {
         return userRepository.save(user);
     }
 
