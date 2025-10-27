@@ -34,5 +34,5 @@ public interface ReactionRepository extends JpaRepository<Reaction, Long> {
     @Query("SELECT r.story.id FROM Reaction r WHERE r.user.id = :userId AND r.type = :type AND r.story.id IN :storyIds")
     List<Long> findUserReactionsForStories(@Param("userId") Long userId,
                                            @Param("type") ReactionType type,
-                                           @Param("storyIds") List<Long> storyIds);
+                                           @Param("storyIds") List<Long>storyIds);
 }

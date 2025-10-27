@@ -17,7 +17,7 @@ public class SearchFilters {
         public SearchFilters() {}
 
         public SearchFilters(String query) {
-            this.query = query;
+                this.query = query;
         }
 
         // Getters and Setters
@@ -47,15 +47,14 @@ public class SearchFilters {
 
         // Validation methods
         public boolean hasCategories() {
-            return categories != null && !categories.isEmpty();
+                return categories != null && !categories.isEmpty();
         }
 
         public boolean hasDateRange() {
-            return startDate != null && endDate != null;
+                return startDate != null && endDate != null;
         }
 
         public boolean hasReadingTimeRange() {
-            return minReadingTime != null || maxReadingTime != null;
+                return minReadingTime != null || maxReadingTime != null;
         }
-    }
-
+}

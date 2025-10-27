@@ -19,5 +19,5 @@ public interface UserRepository extends JpaRepository<com.project.inklink.entity
 
     // For user profile stats
     @Query("SELECT COUNT(s) FROM Story s WHERE s.author.id = :userId AND s.status = 'PUBLISHED'")
-    Long countPublishedStoriesByUser(@Param("userId") Long userId);
+    Long countPublishedStoriesByUser(@Param("userId")Long userId);
 }

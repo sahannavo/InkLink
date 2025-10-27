@@ -4,4 +4,3 @@ public enum ReactionType {
     LIKE,
     BOOKMARK
 }
-

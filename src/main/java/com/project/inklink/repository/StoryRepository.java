@@ -1,7 +1,6 @@
 package com.project.inklink.repository;
 
 import com.project.inklink.entity.Story;
-import com.project.inklink.entity.User;
 import com.project.inklink.enums.StoryStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

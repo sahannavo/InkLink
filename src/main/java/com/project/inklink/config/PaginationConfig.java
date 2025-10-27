@@ -37,5 +37,3 @@ public class PaginationConfig {
         return PageRequest.of(0, 5, Sort.by("viewCount").descending());
     }
 }
-
-

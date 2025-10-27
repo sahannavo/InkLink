@@ -61,5 +61,5 @@ public class Category {
 
     public void setStories(List<Story> stories) {
         this.stories = stories;
-    }
+}
 }
