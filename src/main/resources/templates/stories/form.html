@@ -1,149 +1,296 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org"
-      th:replace="layout :: layout(~{::title}, ~{::section})">
+<html lang="en">
 <head>
-    <title th:text="${story?.id ? 'Edit Story' : 'Write New Story'}">Write Story - InkLink</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Write New Story - InkLink</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .editor-toolbar {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem 0.375rem 0 0;
+            padding: 0.5rem;
+        }
+        #content {
+            border-radius: 0 0 0.375rem 0.375rem;
+            font-family: 'Georgia', serif;
+            line-height: 1.6;
+        }
+        .card {
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+            border: none;
+        }
+        .card-header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border-bottom: none;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            border: none;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5a0db5 0%, #1c68e6 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+            min-width: 300px;
+        }
+        .character-count {
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+        .reading-time {
+            font-weight: 600;
+            color: #6a11cb;
+        }
+        .tag-pill {
+            display: inline-block;
+            background-color: #e9ecef;
+            padding: 0.25rem 0.5rem;
+            margin: 0.25rem;
+            border-radius: 50rem;
+            font-size: 0.875rem;
+        }
+        .tag-pill .close {
+            margin-left: 0.5rem;
+            cursor: pointer;
+        }
+        .story-preview {
+            background-color: #f8f9fa;
+            border-left: 4px solid #6a11cb;
+            padding: 1rem;
+            margin-top: 1rem;
+            border-radius: 0.375rem;
+        }
+    </style>
 </head>
 <body>
-<section th:fragment="content">
-    <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-lg-10">
-                <div class="card">
-                    <div class="card-header">
-                        <h4 class="mb-0" th:text="${story?.id ? 'Edit Story' : 'Write New Story'}">
-                            Write New Story
-                        </h4>
-                    </div>
-                    <div class="card-body">
-                        <!-- Story Form -->
-                        <form th:action="${story?.id ? '/stories/' + story.id + '/edit' : '/stories/create'}"
-                              method="post" th:object="${story}" enctype="multipart/form-data">
-                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Write New Story</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Story Form -->
+                    <form id="storyForm" method="post" enctype="multipart/form-data">
+                        <!-- CSRF Token (simulated) -->
+                        <input type="hidden" id="csrfToken" value="abc123xyz">
 
-                            <!-- Title -->
-                            <div class="mb-3">
-                                <label for="title" class="form-label">Story Title</label>
-                                <input type="text" class="form-control form-control-lg" id="title"
-                                       th:field="*{title}" placeholder="Enter your story title" required>
-                                <div th:if="${#fields.hasErrors('title')}" th:errors="*{title}"
-                                     class="form-text text-danger"></div>
+                        <!-- Title -->
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Story Title</label>
+                            <input type="text" class="form-control form-control-lg" id="title"
+                                   placeholder="Enter your story title" required>
+                            <div class="form-text text-danger" id="titleError" style="display: none;"></div>
+                        </div>
+
+                        <!-- Excerpt -->
+                        <div class="mb-3">
+                            <label for="excerpt" class="form-label">Story Excerpt</label>
+                            <textarea class="form-control" id="excerpt"
+                                      rows="3" placeholder="Brief description of your story"
+                                      maxlength="255"></textarea>
+                            <div class="form-text character-count">
+                                <span id="excerptCount">0</span>/255 characters
                             </div>
+                            <div class="form-text text-danger" id="excerptError" style="display: none;"></div>
+                        </div>
 
-                            <!-- Excerpt -->
-                            <div class="mb-3">
-                                <label for="excerpt" class="form-label">Story Excerpt</label>
-                                <textarea class="form-control" id="excerpt" th:field="*{excerpt}"
-                                          rows="3" placeholder="Brief description of your story"
-                                          maxlength="255"></textarea>
-                                <div class="form-text">
-                                    <span id="excerptCount">0</span>/255 characters
-                                </div>
-                                <div th:if="${#fields.hasErrors('excerpt')}" th:errors="*{excerpt}"
-                                     class="form-text text-danger"></div>
-                            </div>
+                        <!-- Category -->
+                        <div class="mb-3">
+                            <label for="category" class="form-label">Category</label>
+                            <select class="form-select" id="category">
+                                <option value="">Select a category</option>
+                                <option value="1">Fiction</option>
+                                <option value="2">Non-Fiction</option>
+                                <option value="3">Science Fiction</option>
+                                <option value="4">Fantasy</option>
+                                <option value="5">Mystery</option>
+                                <option value="6">Romance</option>
+                            </select>
+                            <div class="form-text text-danger" id="categoryError" style="display: none;"></div>
+                        </div>
 
-                            <!-- Category -->
-                            <div class="mb-3">
-                                <label for="category" class="form-label">Category</label>
-                                <select class="form-select" id="category" th:field="*{category}">
-                                    <option value="">Select a category</option>
-                                    <option th:each="cat : ${categories}"
-                                            th:value="${cat.id}"
-                                            th:text="${cat.name}"
-                                            th:selected="${story?.category?.id == cat.id}">
-                                    </option>
-                                </select>
-                                <div th:if="${#fields.hasErrors('category')}" th:errors="*{category}"
-                                     class="form-text text-danger"></div>
-                            </div>
-
-                            <!-- Content -->
-                            <div class="mb-4">
-                                <label for="content" class="form-label">Story Content</label>
-                                <div class="editor-toolbar mb-2">
-                                    <div class="btn-group btn-group-sm" role="group">
-                                        <button type="button" class="btn btn-outline-secondary" onclick="formatText('bold')">
-                                            <i class="fas fa-bold"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-outline-secondary" onclick="formatText('italic')">
-                                            <i class="fas fa-italic"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-outline-secondary" onclick="formatText('underline')">
-                                            <i class="fas fa-underline"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-outline-secondary" onclick="insertHeading()">
-                                            <i class="fas fa-heading"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-outline-secondary" onclick="insertImage()">
-                                            <i class="fas fa-image"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-outline-secondary" onclick="insertLink()">
-                                            <i class="fas fa-link"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <textarea class="form-control" id="content" th:field="*{content}"
-                                          rows="15" placeholder="Write your story here..." required></textarea>
-                                <div class="form-text">
-                                    <span id="contentCount">0</span> characters
-                                    <span class="mx-2">•</span>
-                                    <span id="readingTime">0 min read</span>
-                                </div>
-                                <div th:if="${#fields.hasErrors('content')}" th:errors="*{content}"
-                                     class="form-text text-danger"></div>
-                            </div>
-
-                            <!-- Featured Image -->
-                            <div class="mb-4">
-                                <label for="featuredImage" class="form-label">Featured Image</label>
-                                <input type="file" class="form-control" id="featuredImage"
-                                       name="featuredImage" accept="image/*">
-                                <div class="form-text">
-                                    Optional: Add a featured image to make your story stand out
-                                </div>
-                            </div>
-
-                            <!-- Tags -->
-                            <div class="mb-4">
-                                <label for="tags" class="form-label">Tags</label>
-                                <input type="text" class="form-control" id="tags"
-                                       placeholder="Add tags separated by commas">
-                                <div class="form-text">
-                                    Add relevant tags to help readers discover your story
-                                </div>
-                            </div>
-
-                            <!-- Form Actions -->
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <button type="button" class="btn btn-outline-secondary" onclick="saveDraft()">
-                                        Save Draft
+                        <!-- Content -->
+                        <div class="mb-4">
+                            <label for="content" class="form-label">Story Content</label>
+                            <div class="editor-toolbar mb-2">
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <button type="button" class="btn btn-outline-secondary" data-command="bold">
+                                        <i class="fas fa-bold"></i>
                                     </button>
-                                </div>
-                                <div>
-                                    <a th:href="@{/stories}" class="btn btn-secondary me-2">Cancel</a>
-                                    <button type="submit" class="btn btn-primary">
-                                        <span th:text="${story?.id ? 'Update Story' : 'Publish Story'}">
-                                            Publish Story
-                                        </span>
+                                    <button type="button" class="btn btn-outline-secondary" data-command="italic">
+                                        <i class="fas fa-italic"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary" data-command="underline">
+                                        <i class="fas fa-underline"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary" data-command="insertHeading">
+                                        <i class="fas fa-heading"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary" data-command="insertImage">
+                                        <i class="fas fa-image"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary" data-command="insertLink">
+                                        <i class="fas fa-link"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary" data-command="insertQuote">
+                                        <i class="fas fa-quote-right"></i>
                                     </button>
                                 </div>
                             </div>
-                        </form>
-                    </div>
+                            <textarea class="form-control" id="content"
+                                      rows="15" placeholder="Write your story here..." required></textarea>
+                            <div class="form-text character-count mt-2">
+                                <span id="contentCount">0</span> characters
+                                <span class="mx-2">•</span>
+                                <span class="reading-time" id="readingTime">0 min read</span>
+                            </div>
+                            <div class="form-text text-danger" id="contentError" style="display: none;"></div>
+
+                            <!-- Story Preview -->
+                            <div class="story-preview mt-3">
+                                <h6>Story Preview:</h6>
+                                <div id="storyPreview" class="mt-2"></div>
+                            </div>
+                        </div>
+
+                        <!-- Featured Image -->
+                        <div class="mb-4">
+                            <label for="featuredImage" class="form-label">Featured Image</label>
+                            <input type="file" class="form-control" id="featuredImage"
+                                   name="featuredImage" accept="image/*">
+                            <div class="form-text">
+                                Optional: Add a featured image to make your story stand out
+                            </div>
+                            <div class="form-text text-danger" id="imageError" style="display: none;"></div>
+                        </div>
+
+                        <!-- Tags -->
+                        <div class="mb-4">
+                            <label for="tagsInput" class="form-label">Tags</label>
+                            <input type="text" class="form-control" id="tagsInput"
+                                   placeholder="Add tags separated by commas">
+                            <div class="form-text">
+                                Add relevant tags to help readers discover your story
+                            </div>
+                            <div id="tagsContainer" class="mt-2"></div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <button type="button" class="btn btn-outline-secondary" id="saveDraft">
+                                    Save Draft
+                                </button>
+                            </div>
+                            <div>
+                                <button type="button" class="btn btn-secondary me-2" id="cancelBtn">Cancel</button>
+                                <button type="submit" class="btn btn-primary">
+                                    Publish Story
+                                </button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
-</section>
+</div>
 
+<!-- Notification -->
+<div class="notification" id="notification" style="display: none;">
+    <div class="alert alert-dismissible fade show" role="alert">
+        <span id="notificationMessage"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const excerptTextarea = document.getElementById('excerpt');
         const contentTextarea = document.getElementById('content');
+        const tagsInput = document.getElementById('tagsInput');
+        const tagsContainer = document.getElementById('tagsContainer');
+        const saveDraftBtn = document.getElementById('saveDraft');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const storyForm = document.getElementById('storyForm');
+        const notification = document.getElementById('notification');
+        const notificationMessage = document.getElementById('notificationMessage');
+        const storyPreview = document.getElementById('storyPreview');
 
-        // Character counters
+        let tags = [];
+        let autoSaveTimer;
+
+        // Initialize character counters
+        updateCounters();
+
+        // Event listeners for character counters
+        excerptTextarea.addEventListener('input', updateCounters);
+        contentTextarea.addEventListener('input', updateCounters);
+
+        // Event listener for tags input
+        tagsInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ',') {
+                e.preventDefault();
+                addTag(tagsInput.value.trim().replace(',', ''));
+                tagsInput.value = '';
+            }
+        });
+
+        // Event listener for toolbar buttons
+        document.querySelectorAll('.editor-toolbar button').forEach(button => {
+            button.addEventListener('click', function() {
+                const command = this.getAttribute('data-command');
+                executeCommand(command);
+            });
+        });
+
+        // Event listener for draft saving
+        saveDraftBtn.addEventListener('click', saveDraft);
+
+        // Event listener for cancel button
+        cancelBtn.addEventListener('click', function() {
+            if (confirm('Are you sure you want to cancel? Any unsaved changes will be lost.')) {
+                window.location.href = '/stories';
+            }
+        });
+
+        // Event listener for form submission
+        storyForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (validateForm()) {
+                showNotification('Story published successfully!', 'success');
+                // In a real application, you would submit the form here
+                // storyForm.submit();
+            }
+        });
+
+        // Auto-save draft
+        contentTextarea.addEventListener('input', function() {
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(saveDraft, 3000);
+        });
+
+        // Update story preview
+        contentTextarea.addEventListener('input', updateStoryPreview);
+
+        // Functions
         function updateCounters() {
             document.getElementById('excerptCount').textContent = excerptTextarea.value.length;
             document.getElementById('contentCount').textContent = contentTextarea.value.length;
@@ -154,59 +301,102 @@
             document.getElementById('readingTime').textContent = readingTime + ' min read';
         }
 
-        excerptTextarea.addEventListener('input', updateCounters);
-        contentTextarea.addEventListener('input', updateCounters);
-        updateCounters(); // Initialize counters
-
-        // Auto-save draft
-        let autoSaveTimer;
-        contentTextarea.addEventListener('input', function() {
-            clearTimeout(autoSaveTimer);
-            autoSaveTimer = setTimeout(saveDraft, 3000);
-        });
-    });
-
-    function formatText(command) {
-        document.getElementById('content').focus();
-        document.execCommand(command, false, null);
-    }
-
-    function insertHeading() {
-        const content = document.getElementById('content');
-        const selection = content.value.substring(content.selectionStart, content.selectionEnd);
-        const heading = `<h3>${selection}</h3>`;
-        content.setRangeText(heading, content.selectionStart, content.selectionEnd, 'select');
-    }
-
-    function insertImage() {
-        const url = prompt('Enter image URL:');
-        if (url) {
-            const img = `<img src="${url}" alt="" style="max-width: 100%; height: auto;">`;
-            document.getElementById('content').focus();
-            document.execCommand('insertHTML', false, img);
-        }
-    }
-
-    function insertLink() {
-        const url = prompt('Enter URL:');
-        if (url) {
-            document.execCommand('createLink', false, url);
-        }
-    }
-
-    function saveDraft() {
-        const formData = new FormData();
-        formData.append('title', document.getElementById('title').value);
-        formData.append('content', document.getElementById('content').value);
-        formData.append('excerpt', document.getElementById('excerpt').value);
-
-        fetch('/api/stories/draft', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]').content
+        function addTag(tagText) {
+            if (tagText && !tags.includes(tagText)) {
+                tags.push(tagText);
+                renderTags();
             }
-        })
+        }
+
+        function removeTag(tagText) {
+            tags = tags.filter(tag => tag !== tagText);
+            renderTags();
+        }
+
+        function renderTags() {
+            tagsContainer.innerHTML = '';
+            tags.forEach(tag => {
+                const tagElement = document.createElement('span');
+                tagElement.className = 'tag-pill';
+                tagElement.innerHTML = `
+                        ${tag}
+                        <span class="close" onclick="removeTag('${tag}')">&times;</span>
+                    `;
+                tagsContainer.appendChild(tagElement);
+            });
+        }
+
+        function executeCommand(command) {
+            const content = document.getElementById('content');
+            const start = content.selectionStart;
+            const end = content.selectionEnd;
+            const selectedText = content.value.substring(start, end);
+
+            let formattedText = '';
+
+            switch(command) {
+                case 'bold':
+                    formattedText = `**${selectedText}**`;
+                    break;
+                case 'italic':
+                    formattedText = `*${selectedText}*`;
+                    break;
+                case 'underline':
+                    formattedText = `<u>${selectedText}</u>`;
+                    break;
+                case 'insertHeading':
+                    formattedText = `## ${selectedText}`;
+                    break;
+                case 'insertImage':
+                    const imageUrl = prompt('Enter image URL:');
+                    if (imageUrl) {
+                        formattedText = `![Image](${imageUrl})`;
+                    } else {
+                        return;
+                    }
+                    break;
+                case 'insertLink':
+                    const linkUrl = prompt('Enter URL:');
+                    if (linkUrl) {
+                        formattedText = `[${selectedText}](${linkUrl})`;
+                    } else {
+                        return;
+                    }
+                    break;
+                case 'insertQuote':
+                    formattedText = `> ${selectedText}`;
+                    break;
+            }
+
+            content.value = content.value.substring(0, start) + formattedText + content.value.substring(end);
+            content.focus();
+            content.setSelectionRange(start + formattedText.length, start + formattedText.length);
+            updateCounters();
+            updateStoryPreview();
+        }
+
+        function saveDraft() {
+            const formData = new FormData();
+            formData.append('title', document.getElementById('title').value);
+            formData.append('content', document.getElementById('content').value);
+            formData.append('excerpt', document.getElementById('excerpt').value);
+            formData.append('category', document.getElementById('category').value);
+            formData.append('tags', JSON.stringify(tags));
+
+            // Simulate API call
+            setTimeout(() => {
+                showNotification('Draft saved successfully!', 'success');
+            }, 500);
+
+            // In a real application, you would use fetch:
+            /*
+            fetch('/api/stories/draft', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.getElementById('csrfToken').value
+                }
+            })
             .then(response => {
                 if (response.ok) {
                     showNotification('Draft saved successfully!', 'success');
@@ -216,22 +406,74 @@
                 console.error('Error saving draft:', error);
                 showNotification('Error saving draft', 'error');
             });
-    }
+            */
+        }
 
-    function showNotification(message, type) {
-        // Simple notification implementation
-        const notification = document.createElement('div');
-        notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show`;
-        notification.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        document.querySelector('.card-body').prepend(notification);
+        function validateForm() {
+            let isValid = true;
+            const title = document.getElementById('title').value.trim();
+            const content = document.getElementById('content').value.trim();
+            const category = document.getElementById('category').value;
 
-        setTimeout(() => {
-            notification.remove();
-        }, 3000);
-    }
+            // Reset error messages
+            document.querySelectorAll('.form-text.text-danger').forEach(el => {
+                el.style.display = 'none';
+            });
+
+            // Validate title
+            if (!title) {
+                document.getElementById('titleError').textContent = 'Title is required';
+                document.getElementById('titleError').style.display = 'block';
+                isValid = false;
+            }
+
+            // Validate content
+            if (!content) {
+                document.getElementById('contentError').textContent = 'Content is required';
+                document.getElementById('contentError').style.display = 'block';
+                isValid = false;
+            }
+
+            // Validate category
+            if (!category) {
+                document.getElementById('categoryError').textContent = 'Please select a category';
+                document.getElementById('categoryError').style.display = 'block';
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function showNotification(message, type) {
+            const alert = notification.querySelector('.alert');
+            alert.className = `alert alert-${type} alert-dismissible fade show`;
+            notificationMessage.textContent = message;
+            notification.style.display = 'block';
+
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        function updateStoryPreview() {
+            const content = document.getElementById('content').value;
+
+            // Simple markdown-like parsing for preview
+            let htmlContent = content
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/## (.*?)(\n|$)/g, '<h4>$1</h4>')
+                .replace(/> (.*?)(\n|$)/g, '<blockquote class="blockquote">$1</blockquote>')
+                .replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" class="img-fluid my-2">')
+                .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
+                .replace(/\n/g, '<br>');
+
+            storyPreview.innerHTML = htmlContent || '<em class="text-muted">Start writing to see a preview...</em>';
+        }
+
+        // Make removeTag function available globally for the tag close buttons
+        window.removeTag = removeTag;
+    });
 </script>
 </body>
 </html>
