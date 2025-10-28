@@ -4,6 +4,9 @@ import com.project.inklink.entity.Story;
 import com.project.inklink.entity.User;
 import com.project.inklink.enums.StoryStatus;
 import com.project.inklink.repository.StoryRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -29,6 +32,11 @@ public class StoryService {
         this.analyticsService = analyticsService;
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "stories", allEntries = true),
+            @CacheEvict(value = "trending", allEntries = true),
+            @CacheEvict(value = "search", allEntries = true)
+    })
     public Story createStory(Story story, User author) {
         validationService.validateStoryCreation(story);
 
@@ -44,6 +52,11 @@ public class StoryService {
         return savedStory;
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "stories", key = "#storyId"),
+            @CacheEvict(value = "trending", allEntries = true),
+            @CacheEvict(value = "search", allEntries = true)
+    })
     public Story updateStory(Long storyId, Story storyDetails, Long userId) {
         validationService.validateStoryUpdate(storyId, userId);
 
@@ -68,6 +81,11 @@ public class StoryService {
         return updatedStory;
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "stories", key = "#storyId"),
+            @CacheEvict(value = "trending", allEntries = true),
+            @CacheEvict(value = "search", allEntries = true)
+    })
     public Story publishStory(Long storyId, Long userId) {
         validationService.validateStoryUpdate(storyId, userId);
 
@@ -89,6 +107,11 @@ public class StoryService {
         return publishedStory;
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "stories", key = "#storyId"),
+            @CacheEvict(value = "trending", allEntries = true),
+            @CacheEvict(value = "search", allEntries = true)
+    })
     public void deleteStory(Long storyId, Long userId) {
         validationService.validateStoryUpdate(storyId, userId);
 
@@ -111,6 +134,7 @@ public class StoryService {
         return storyRepository.findByAuthorWithPagination(userId, status, pageable);
     }
 
+    @Cacheable(value = "stories", key = "#id")
     @Transactional(readOnly = true)
     public Optional<Story> getStoryById(Long id) {
         Optional<Story> story = storyRepository.findById(id);
@@ -125,6 +149,10 @@ public class StoryService {
         return story;
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "stories", key = "#storyId"),
+            @CacheEvict(value = "trending", allEntries = true)
+    })
     public Story incrementViewCount(Long storyId) {
         Story story = storyRepository.findById(storyId)
                 .orElseThrow(() -> new IllegalArgumentException("Story not found"));
@@ -138,12 +166,14 @@ public class StoryService {
         return updatedStory;
     }
 
+    @Cacheable(value = "trending", key = "#pageable.pageNumber + '-' + #pageable.pageSize")
     @Transactional(readOnly = true)
     public List<Story> getTrendingStories(Pageable pageable) {
         LocalDateTime weekAgo = LocalDateTime.now().minusDays(7);
         return storyRepository.findTrendingStories(weekAgo, pageable);
     }
 
+    @Cacheable(value = "search", key = "#query + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     @Transactional(readOnly = true)
     public Page<Story> searchStories(String query, Pageable pageable) {
         if (query == null || query.trim().isEmpty()) {
@@ -156,6 +186,7 @@ public class StoryService {
         return storyRepository.searchByTitleOrContent(query.trim(), pageable);
     }
 
+    @Cacheable(value = "search", key = "'category-' + #category + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     @Transactional(readOnly = true)
     public Page<Story> searchByCategory(String category, Pageable pageable) {
         if (category == null || category.trim().isEmpty()) {
@@ -171,6 +202,7 @@ public class StoryService {
                 .orElse(false);
     }
 
+    @Cacheable(value = "search", key = "'related-' + #storyId + '-' + #limit")
     @Transactional(readOnly = true)
     public List<Story> getRelatedStories(Long storyId, int limit) {
         Optional<Story> storyOpt = storyRepository.findById(storyId);

@@ -1,7 +1,9 @@
 package com.project.inklink.config;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -15,43 +17,46 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationExceptions(
-            MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
-        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    // ... existing code ...
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, String>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("error", "Data integrity violation");
+        errorResponse.put("message", "The operation could not be completed due to data constraints.");
+
+        // Log the actual error for debugging
+        System.err.println("Data integrity violation: " + ex.getMessage());
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException ex) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, String>> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("error", "Invalid request format");
+        errorResponse.put("message", "The request contains invalid JSON format or data type.");
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(AccessDeniedException.class)
-    public ModelAndView handleAccessDeniedException(AccessDeniedException ex) {
-        ModelAndView mav = new ModelAndView();
-        mav.addObject("error", "You don't have permission to access this resource.");
-        mav.addObject("message", ex.getMessage());
-        mav.setViewName("error/403");
-        return mav;
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<Map<String, String>> handleBusinessException(BusinessException ex) {
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("error", "Business rule violation");
+        errorResponse.put("message", ex.getMessage());
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
-    }
+    // Custom exception class
+    public static class BusinessException extends RuntimeException {
+        public BusinessException(String message) {
+            super(message);
+        }
 
-    @ExceptionHandler(Exception.class)
-    public ModelAndView handleGenericException(Exception ex) {
-        ModelAndView mav = new ModelAndView();
-        mav.addObject("error", "An unexpected error occurred");
-        mav.addObject("message", ex.getMessage());
-        mav.setViewName("error/500");
-        return mav;
+        public BusinessException(String message, Throwable cause) {
+            super(message, cause);
+        }
     }
 }
