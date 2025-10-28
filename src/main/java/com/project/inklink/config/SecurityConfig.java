@@ -6,20 +6,26 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.header.writers.XXssProtectionHeaderWriter;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
+    private static final String REMEMBER_ME_KEY = "inklink-remember-me-key-2025";
 
     public SecurityConfig(CustomUserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
@@ -28,15 +34,25 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .authorizeHttpRequests(authz -> authz
+                .authorizeHttpRequests(authorize -> authorize
                         // Public endpoints
-                        .requestMatchers("/", "/home", "/register", "/login", "/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
-                        .requestMatchers("/stories", "/stories/**", "/api/stories/**").permitAll()
-                        .requestMatchers("/categories", "/api/categories/**").permitAll()
+                        .requestMatchers(
+                                "/", "/home", "/register", "/login",
+                                "/css/**", "/js/**", "/images/**", "/webjars/**",
+                                "/stories", "/stories/view/**", "/api/stories/public/**",
+                                "/categories", "/api/categories/**",
+                                "/error/**", "/h2-console/**",
+                                "/favicon.ico", "/robots.txt"
+                        ).permitAll()
                         // User endpoints
-                        .requestMatchers("/profile/**", "/stories/create", "/stories/my").authenticated()
+                        .requestMatchers(
+                                "/profile/**", "/stories/create", "/stories/my",
+                                "/stories/edit/**", "/stories/delete/**",
+                                "/api/stories/user/**", "/api/user/**",
+                                "/dashboard"
+                        ).authenticated()
                         // Admin endpoints
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -50,17 +66,58 @@ public class SecurityConfig {
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/?logout=true")
                         .invalidateHttpSession(true)
-                        .deleteCookies("JSESSIONID")
+                        .deleteCookies("JSESSIONID", "remember-me")
                         .permitAll()
                 )
+                .rememberMe(remember -> remember
+                        .rememberMeServices(rememberMeServices())
+                        .key(REMEMBER_ME_KEY)
+                )
                 .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                         .sessionFixation().migrateSession()
                         .maximumSessions(1)
                         .maxSessionsPreventsLogin(false)
+                        .expiredUrl("/login?expired=true")
                 )
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                        .ignoringRequestMatchers("/api/public/**")
+                        .ignoringRequestMatchers(
+                                "/h2-console/**",
+                                "/api/public/**"
+                        )
+                )
+                .headers(headers -> headers
+                        // Frame options for H2 console
+                        .frameOptions(frame -> frame.sameOrigin())
+                        // Content Security Policy
+                        .contentSecurityPolicy(csp -> csp
+                                .policyDirectives("default-src 'self'; " +
+                                        "script-src 'self' https://cdn.jsdelivr.net; " +
+                                        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; " +
+                                        "img-src 'self' data: blob: https://cdn.jsdelivr.net; " +
+                                        "font-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; " +
+                                        "connect-src 'self'; " +
+                                        "frame-src 'self'; " +
+                                        "object-src 'none'; " +
+                                        "base-uri 'self'")
+                        )
+                        // HTTP Strict Transport Security
+                        .httpStrictTransportSecurity(hsts -> hsts
+                                .includeSubDomains(true)
+                                .preload(true)
+                                .maxAgeInSeconds(31536000)
+                        )
+                        // XSS Protection
+                        .xssProtection(xss -> xss
+                                .headerValue(XXssProtectionHeaderWriter.HeaderValue.ENABLED_MODE_BLOCK)
+                        )
+                        // Content Type Options
+                        .contentTypeOptions(contentType -> {})
+                        // Referrer Policy
+                        .referrerPolicy(referrer -> referrer
+                                .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)
+                        )
                 )
                 .authenticationProvider(authenticationProvider());
 
@@ -72,6 +129,7 @@ public class SecurityConfig {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
+        authProvider.setHideUserNotFoundExceptions(false);
         return authProvider;
     }
 
@@ -82,19 +140,48 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return new BCryptPasswordEncoder(12);
     }
 
     @Bean
     public AuthenticationSuccessHandler authenticationSuccessHandler() {
         return (request, response, authentication) -> {
-            // Redirect based on user role or previous page
+            // Check for redirect parameter
             String redirectUrl = request.getParameter("redirect");
-            if (redirectUrl != null && !redirectUrl.isEmpty()) {
+            if (redirectUrl != null && !redirectUrl.isEmpty() &&
+                    !redirectUrl.contains("//") && redirectUrl.startsWith("/")) {
                 response.sendRedirect(redirectUrl);
+                return;
+            }
+
+            // Check if the request came from the default login page or was direct
+            String referer = request.getHeader("Referer");
+            if (referer != null && referer.contains("/login")) {
+                // Redirect based on role
+                boolean isAdmin = authentication.getAuthorities().stream()
+                        .anyMatch(grantedAuthority ->
+                                grantedAuthority.getAuthority().equals("ROLE_ADMIN"));
+
+                if (isAdmin) {
+                    response.sendRedirect("/admin/dashboard");
+                } else {
+                    response.sendRedirect("/dashboard");
+                }
             } else {
-                response.sendRedirect("/dashboard");
+                // Default redirect to home
+                response.sendRedirect("/");
             }
         };
+    }
+
+    @Bean
+    public TokenBasedRememberMeServices rememberMeServices() {
+        TokenBasedRememberMeServices rememberMe =
+                new TokenBasedRememberMeServices(REMEMBER_ME_KEY, userDetailsService);
+        rememberMe.setTokenValiditySeconds(1209600); // 2 weeks
+        rememberMe.setParameter("remember-me");
+        rememberMe.setCookieName("remember-me");
+        rememberMe.setAlwaysRemember(false);
+        return rememberMe;
     }
 }
