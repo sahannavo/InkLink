@@ -14,6 +14,7 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
+    // Basic CRUD operations
     Optional<User> findByEmail(String email);
 
     Optional<User> findByUsername(String username);
@@ -22,7 +23,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Boolean existsByUsername(String username);
 
-    // For user profile stats
+    // User profile stats
     @Query("SELECT COUNT(s) FROM Story s WHERE s.author.id = :userId AND s.status = 'PUBLISHED'")
     Long countPublishedStoriesByUser(@Param("userId") Long userId);
 
@@ -36,4 +37,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // Find active users
     @Query("SELECT u FROM User u WHERE u.enabled = true")
     List<User> findActiveUsers();
+
+    // Performance optimized query for user details with stories count
+    @Query("SELECT u, COUNT(s) as storyCount FROM User u LEFT JOIN Story s ON s.author = u AND s.status = 'PUBLISHED' WHERE u.id = :userId GROUP BY u")
+    Optional<Object[]> findUserWithStats(@Param("userId") Long userId);
 }

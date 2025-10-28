@@ -2,7 +2,6 @@ package com.project.inklink.service;
 
 import com.project.inklink.entity.Story;
 import com.project.inklink.entity.User;
-import com.project.inklink.enums.StoryStatus;
 import com.project.inklink.repository.StoryRepository;
 import com.project.inklink.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;

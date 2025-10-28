@@ -17,20 +17,27 @@ import java.util.Optional;
 @Repository
 public interface ReactionRepository extends JpaRepository<Reaction, Long> {
 
+    // Count reactions by story and type
     Long countByStoryAndType(Story story, ReactionType type);
 
+    // Find specific reaction by user, story and type
     Optional<Reaction> findByUserAndStoryAndType(User user, Story story, ReactionType type);
 
+    // Get user's bookmarked stories
     @Query("SELECT r.story FROM Reaction r WHERE r.user.id = :userId AND r.type = 'BOOKMARK'")
     Page<Story> findBookmarksByUser(@Param("userId") Long userId, Pageable pageable);
 
+    // Delete specific reaction
     void deleteByUserAndStoryAndType(User user, Story story, ReactionType type);
 
+    // Find all reactions by user and type
     List<Reaction> findByUserAndType(User user, ReactionType type);
 
+    // Count likes for multiple stories (performance optimized)
     @Query("SELECT r.story.id, COUNT(r) FROM Reaction r WHERE r.story.id IN :storyIds AND r.type = 'LIKE' GROUP BY r.story.id")
     List<Object[]> countLikesByStories(@Param("storyIds") List<Long> storyIds);
 
+    // Find user reactions for multiple stories
     @Query("SELECT r.story.id FROM Reaction r WHERE r.user.id = :userId AND r.type = :type AND r.story.id IN :storyIds")
     List<Long> findUserReactionsForStories(@Param("userId") Long userId,
                                            @Param("type") ReactionType type,

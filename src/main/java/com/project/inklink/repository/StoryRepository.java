@@ -21,7 +21,7 @@ public interface StoryRepository extends JpaRepository<Story, Long> {
     @Query("SELECT s FROM Story s WHERE s.status = 'PUBLISHED' ORDER BY s.publishedAt DESC")
     Page<Story> findPublishedStoriesWithPagination(Pageable pageable);
 
-    // User Profile: Stories by author with pagination
+    // User Profile: Stories by author with pagination and status filtering
     @Query("SELECT s FROM Story s WHERE s.author.id = :authorId AND " +
             "(:status IS NULL OR s.status = :status) " +
             "ORDER BY s.createdAt DESC")
@@ -42,7 +42,7 @@ public interface StoryRepository extends JpaRepository<Story, Long> {
             "ORDER BY s.viewCount DESC, s.publishedAt DESC")
     List<Story> findTrendingStories(@Param("weekAgo") LocalDateTime weekAgo, Pageable pageable);
 
-    // FIXED: Search stories by title or content - removed LOWER() from content
+    // Search stories by title or content
     @Query("SELECT s FROM Story s WHERE s.status = 'PUBLISHED' AND " +
             "(LOWER(s.title) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
             "s.content LIKE CONCAT('%', :query, '%'))")
@@ -116,6 +116,4 @@ public interface StoryRepository extends JpaRepository<Story, Long> {
     Page<Story> findRelatedStories(@Param("categoryName") String categoryName,
                                    @Param("excludeStoryId") Long excludeStoryId,
                                    Pageable pageable);
-
-    // REMOVED: Optional<Story> findBySlug(String slug); - This was causing issues
 }
