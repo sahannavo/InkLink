@@ -5,283 +5,277 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeApp() {
-    setupCSRF();
-    setupEventListeners();
-    initializeComponents();
-}
-
-// CSRF Token Setup
-function setupCSRF() {
-    const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-    const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
-
-    // Set up AJAX requests to include CSRF token
-    $.ajaxSetup({
-        beforeSend: function(xhr) {
-            xhr.setRequestHeader(header, token);
-        }
-    });
-}
-
-// Event Listeners
-function setupEventListeners() {
-    // Auto-dismiss alerts
-    const alerts = document.querySelectorAll('.alert');
-    alerts.forEach(alert => {
-        setTimeout(() => {
-            const bsAlert = new bootstrap.Alert(alert);
-            bsAlert.close();
-        }, 5000);
-    });
-
-    // Form validation
-    const forms = document.querySelectorAll('form');
-    forms.forEach(form => {
-        form.addEventListener('submit', handleFormSubmit);
-    });
-
-    // Infinite scroll for stories
-    if (document.getElementById('storiesGrid')) {
-        setupInfiniteScroll();
-    }
-}
-
-// Component Initialization
-function initializeComponents() {
     // Initialize tooltips
+    initTooltips();
+
+    // Initialize form validation
+    initFormValidation();
+
+    // Initialize interactive elements
+    initInteractiveElements();
+
+    // Initialize search functionality
+    initSearch();
+}
+
+function initTooltips() {
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
-
-    // Initialize popovers
-    const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
-    popoverTriggerList.map(function (popoverTriggerEl) {
-        return new bootstrap.Popover(popoverTriggerEl);
-    });
 }
 
-// Form Submission Handler
-function handleFormSubmit(e) {
-    const form = e.target;
-    const submitBtn = form.querySelector('button[type="submit"]');
+function initFormValidation() {
+    // Add custom validation for forms
+    const forms = document.querySelectorAll('.needs-validation');
 
-    // Add loading state
-    if (submitBtn) {
-        submitBtn.classList.add('btn-loading');
-        submitBtn.disabled = true;
-    }
-
-    // Validate form
-    if (!form.checkValidity()) {
-        e.preventDefault();
-        form.classList.add('was-validated');
-        if (submitBtn) {
-            submitBtn.classList.remove('btn-loading');
-            submitBtn.disabled = false;
-        }
-    }
-}
-
-// Infinite Scroll
-function setupInfiniteScroll() {
-    let isLoading = false;
-    let currentPage = 1;
-    const totalPages = parseInt(document.getElementById('storiesGrid').dataset.totalPages || 1);
-
-    window.addEventListener('scroll', function() {
-        if (isLoading || currentPage >= totalPages) return;
-
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        const windowHeight = window.innerHeight;
-        const documentHeight = document.documentElement.scrollHeight;
-
-        if (scrollTop + windowHeight >= documentHeight - 100) {
-            loadMoreStories();
-        }
-    });
-
-    async function loadMoreStories() {
-        isLoading = true;
-        currentPage++;
-
-        try {
-            const response = await fetch(`/api/stories?page=${currentPage}`);
-            const stories = await response.json();
-
-            if (stories && stories.length > 0) {
-                appendStories(stories);
+    forms.forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
             }
-        } catch (error) {
-            console.error('Error loading more stories:', error);
-        } finally {
-            isLoading = false;
+            form.classList.add('was-validated');
+        }, false);
+    });
+}
+
+function initInteractiveElements() {
+    // Add loading states to buttons
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function() {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.classList.add('btn-loading');
+                submitBtn.disabled = true;
+            }
+        });
+    });
+
+    // Initialize password toggle
+    initPasswordToggle();
+
+    // Initialize character counters
+    initCharacterCounters();
+}
+
+function initPasswordToggle() {
+    const toggleButtons = document.querySelectorAll('.password-toggle');
+
+    toggleButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const input = this.parentElement.querySelector('input');
+            const icon = this.querySelector('i');
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        });
+    });
+}
+
+function initCharacterCounters() {
+    const counters = document.querySelectorAll('[data-max-length]');
+
+    counters.forEach(counter => {
+        const maxLength = counter.getAttribute('data-max-length');
+        const counterElement = document.getElementById(counter.getAttribute('data-counter-id'));
+
+        if (counterElement) {
+            counter.addEventListener('input', function() {
+                const currentLength = this.value.length;
+                counterElement.textContent = `${currentLength}/${maxLength}`;
+
+                if (currentLength > maxLength * 0.8) {
+                    counterElement.classList.add('text-warning');
+                } else {
+                    counterElement.classList.remove('text-warning');
+                }
+
+                if (currentLength > maxLength) {
+                    counterElement.classList.add('text-danger');
+                } else {
+                    counterElement.classList.remove('text-danger');
+                }
+            });
+
+            // Trigger initial count
+            counter.dispatchEvent(new Event('input'));
         }
-    }
+    });
+}
 
-    function appendStories(stories) {
-        const grid = document.getElementById('storiesGrid');
+function initSearch() {
+    const searchInput = document.querySelector('input[name="query"]');
 
-        stories.forEach(story => {
-            const storyElement = createStoryElement(story);
-            grid.appendChild(storyElement);
+    if (searchInput) {
+        // Debounced search
+        let timeout;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                if (this.value.length >= 3 || this.value.length === 0) {
+                    this.form.submit();
+                }
+            }, 500);
         });
     }
+}
 
-    function createStoryElement(story) {
-        const col = document.createElement('div');
-        col.className = 'col-md-6 col-lg-4 mb-4';
+// API Helper Functions
+const ApiHelper = {
+    async post(url, data) {
+        const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
 
-        col.innerHTML = `
-            <div class="card story-card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">${story.title}</h5>
-                    <p class="card-text text-muted">By ${story.author.username}</p>
-                    <p class="card-text">${story.excerpt}</p>
-                    <div class="story-meta d-flex justify-content-between text-muted">
-                        <small>${story.readingTime} min read</small>
-                        <small>${story.likeCount} likes</small>
-                    </div>
-                </div>
-                <div class="card-footer bg-transparent">
-                    <a href="/stories/${story.id}" class="btn btn-outline-primary btn-sm">Read More</a>
-                </div>
-            </div>
-        `;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                [csrfHeader]: csrfToken
+            },
+            body: JSON.stringify(data)
+        });
 
-        return col;
+        return await response.json();
+    },
+
+    async put(url, data) {
+        const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+        const response = await fetch(url, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                [csrfHeader]: csrfToken
+            },
+            body: JSON.stringify(data)
+        });
+
+        return await response.json();
+    },
+
+    async delete(url) {
+        const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+        const response = await fetch(url, {
+            method: 'DELETE',
+            headers: {
+                [csrfHeader]: csrfToken
+            }
+        });
+
+        return await response.json();
+    }
+};
+
+// Story Reactions
+function reactToStory(storyId, reactionType) {
+    const url = `/api/stories/${storyId}/react`;
+    const data = { reactionType };
+
+    ApiHelper.post(url, data)
+        .then(response => {
+            if (response.success) {
+                // Update reaction counts
+                updateReactionCounts(storyId, response.data);
+            }
+        })
+        .catch(error => {
+            console.error('Error reacting to story:', error);
+            showToast('Error reacting to story', 'error');
+        });
+}
+
+function updateReactionCounts(storyId, data) {
+    const likeCountElement = document.querySelector(`[data-story-id="${storyId}"] .like-count`);
+    if (likeCountElement) {
+        likeCountElement.textContent = data.likeCount;
     }
 }
 
-// API Functions
-const Api = {
-    // Story reactions
-    async reactToStory(storyId, reactionType) {
-        try {
-            const response = await fetch(`/api/stories/${storyId}/reactions`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ type: reactionType })
-            });
+// Toast Notifications
+function showToast(message, type = 'info') {
+    const toastContainer = document.getElementById('toast-container') || createToastContainer();
 
-            if (response.ok) {
-                return await response.json();
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-bg-${type} border-0`;
+    toast.setAttribute('role', 'alert');
+
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">${message}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+
+    toastContainer.appendChild(toast);
+
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+
+    // Remove toast after it's hidden
+    toast.addEventListener('hidden.bs.toast', () => {
+        toast.remove();
+    });
+}
+
+function createToastContainer() {
+    const container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'toast-container position-fixed top-0 end-0 p-3';
+    container.style.zIndex = '9999';
+    document.body.appendChild(container);
+    return container;
+}
+
+// Infinite Scroll (for future implementation)
+function initInfiniteScroll(containerSelector, loadMoreUrl) {
+    const container = document.querySelector(containerSelector);
+
+    if (!container) return;
+
+    let isLoading = false;
+    let page = 1;
+    let hasMore = true;
+
+    const observer = new IntersectionObserver(async (entries) => {
+        if (entries[0].isIntersecting && !isLoading && hasMore) {
+            isLoading = true;
+            page++;
+
+            try {
+                const response = await fetch(`${loadMoreUrl}?page=${page}`);
+                const html = await response.text();
+
+                if (html.trim()) {
+                    container.insertAdjacentHTML('beforeend', html);
+                } else {
+                    hasMore = false;
+                }
+            } catch (error) {
+                console.error('Error loading more content:', error);
+            } finally {
+                isLoading = false;
             }
-        } catch (error) {
-            console.error('Error reacting to story:', error);
         }
-    },
+    });
 
-    // Follow/Unfollow user
-    async followUser(userId) {
-        try {
-            const response = await fetch(`/api/user/${userId}/follow`, {
-                method: 'POST'
-            });
+    const sentinel = document.createElement('div');
+    sentinel.className = 'infinite-scroll-sentinel';
+    container.appendChild(sentinel);
+    observer.observe(sentinel);
+}
 
-            return response.ok;
-        } catch (error) {
-            console.error('Error following user:', error);
-            return false;
-        }
-    },
-
-    async unfollowUser(userId) {
-        try {
-            const response = await fetch(`/api/user/${userId}/unfollow`, {
-                method: 'POST'
-            });
-
-            return response.ok;
-        } catch (error) {
-            console.error('Error unfollowing user:', error);
-            return false;
-        }
-    },
-
-    // Save story draft
-    async saveDraft(storyData) {
-        try {
-            const response = await fetch('/api/stories/draft', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(storyData)
-            });
-
-            return response.ok;
-        } catch (error) {
-            console.error('Error saving draft:', error);
-            return false;
-        }
-    }
-};
-
-// Utility Functions
-const Utils = {
-    // Debounce function
-    debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
-    },
-
-    // Format date
-    formatDate(dateString) {
-        const options = { year: 'numeric', month: 'long', day: 'numeric' };
-        return new Date(dateString).toLocaleDateString(undefined, options);
-    },
-
-    // Show notification
-    showNotification(message, type = 'info') {
-        // Create notification element
-        const notification = document.createElement('div');
-        notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-        notification.style.cssText = `
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            min-width: 300px;
-        `;
-
-        notification.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-
-        document.body.appendChild(notification);
-
-        // Auto-remove after 5 seconds
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.parentNode.removeChild(notification);
-            }
-        }, 5000);
-    },
-
-    // Copy to clipboard
-    async copyToClipboard(text) {
-        try {
-            await navigator.clipboard.writeText(text);
-            this.showNotification('Copied to clipboard!', 'success');
-        } catch (err) {
-            console.error('Failed to copy: ', err);
-            this.showNotification('Failed to copy to clipboard', 'error');
-        }
-    }
-};
-
-// Export to global scope
+// Export for global access
 window.InkLink = {
-    Api,
-    Utils
+    ApiHelper,
+    showToast,
+    initInfiniteScroll
 };

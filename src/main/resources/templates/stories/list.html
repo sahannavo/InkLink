@@ -100,14 +100,14 @@
                             </div>
                             <div class="card-footer bg-transparent">
                                 <a th:href="@{/stories/{id}(id=${story.id})}" class="btn btn-outline-primary btn-sm">
-                                    Read More
+                                    Read Story
                                 </a>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Empty State -->
+                <!-- No Stories Message -->
                 <div th:if="${#lists.isEmpty(stories)}" class="text-center py-5">
                     <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
                     <h4 class="text-muted">No stories found</h4>
@@ -116,22 +116,21 @@
                 </div>
 
                 <!-- Pagination -->
-                <nav aria-label="Story pagination" th:if="${totalPages > 1}">
+                <nav th:if="${totalPages > 1}" aria-label="Stories pagination">
                     <ul class="pagination justify-content-center">
                         <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
-                            <a class="page-link" th:href="@{/stories(page=${currentPage - 1}, query=${query}, category=${selectedCategory}, sort=${sortBy})}">
+                            <a class="page-link" th:href="@{/stories(page=${currentPage - 1}, category=${selectedCategory}, sort=${sortBy}, query=${query})}">
                                 Previous
                             </a>
                         </li>
                         <li th:each="page : ${#numbers.sequence(0, totalPages - 1)}"
                             class="page-item" th:classappend="${page == currentPage} ? 'active'">
                             <a class="page-link"
-                               th:href="@{/stories(page=${page}, query=${query}, category=${selectedCategory}, sort=${sortBy})}"
+                               th:href="@{/stories(page=${page}, category=${selectedCategory}, sort=${sortBy}, query=${query})}"
                                th:text="${page + 1}">1</a>
                         </li>
                         <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
-                            <a class="page-link"
-                               th:href="@{/stories(page=${currentPage + 1}, query=${query}, category=${selectedCategory}, sort=${sortBy})}">
+                            <a class="page-link" th:href="@{/stories(page=${currentPage + 1}, category=${selectedCategory}, sort=${sortBy}, query=${query})}">
                                 Next
                             </a>
                         </li>
