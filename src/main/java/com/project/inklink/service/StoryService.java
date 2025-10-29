@@ -234,6 +234,6 @@ public class StoryService {
                 new Object[]{"DRAFT", storyRepository.countByAuthorIdAndStatus(userId, StoryStatus.DRAFT)},
                 new Object[]{"PUBLISHED", storyRepository.countByAuthorIdAndStatus(userId, StoryStatus.PUBLISHED)},
                 new Object[]{"ARCHIVED", storyRepository.countByAuthorIdAndStatus(userId, StoryStatus.ARCHIVED)}
-        );
-    }
+                );
+}
 }

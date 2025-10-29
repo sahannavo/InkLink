@@ -75,5 +75,5 @@ public class SearchService {
 
     public Page<Story> getPopularStories(Pageable pageable) {
         return storyRepository.findPopularStories(pageable);
-    }
+}
 }

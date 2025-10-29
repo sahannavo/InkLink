@@ -56,5 +56,5 @@ public class SearchFilters {
 
         public boolean hasReadingTimeRange() {
                 return minReadingTime != null || maxReadingTime != null;
-        }
+}
 }

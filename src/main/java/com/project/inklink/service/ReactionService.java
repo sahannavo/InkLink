@@ -22,14 +22,21 @@ import java.util.Optional;
 @Transactional
 public class ReactionService {
 
-    @Autowired
-    private ReactionRepository reactionRepository;
+    private final ReactionRepository reactionRepository;
+    private final StoryRepository storyRepository;
+    private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Autowired
-    private StoryRepository storyRepository;
-
-    @Autowired
-    private UserRepository userRepository;
+    public ReactionService(ReactionRepository reactionRepository,
+                           StoryRepository storyRepository,
+                           UserRepository userRepository,
+                           NotificationService notificationService) {
+        this.reactionRepository = reactionRepository;
+        this.storyRepository = storyRepository;
+        this.userRepository = userRepository;
+        this.notificationService = notificationService;
+    }
 
     public Map<String, Object> toggleLike(Long storyId, Long userId) {
         return toggleReaction(storyId, userId, ReactionType.LIKE);
@@ -67,6 +74,11 @@ public class ReactionService {
             reactionRepository.save(reaction);
             response.put("action", "added");
             response.put("message", type + " added successfully");
+
+            // Send notification for likes
+            if (type == ReactionType.LIKE) {
+                notificationService.createStoryLikeNotification(story, user);
+            }
         }
 
         // Get updated count

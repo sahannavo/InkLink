@@ -8,6 +8,6 @@ public class InkLinkApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(InkLinkApplication.class,args);
-    }
+}
 
 }

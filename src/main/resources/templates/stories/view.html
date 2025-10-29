@@ -165,25 +165,10 @@
                     </div>
 
                     <div id="commentsList">
-                        <div th:each="comment : ${comments}" class="card mb-3">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center mb-2">
-                                    <img th:src="${comment.author.profilePicture != null ? '/api/files/avatar/' + comment.author.profilePicture : '/images/avatar-placeholder.png'}"
-                                         alt="Commenter" class="rounded-circle me-2" width="32" height="32">
-                                    <div>
-                                        <h6 class="mb-0" th:text="${comment.author.username}">Username</h6>
-                                        <small class="text-muted"
-                                               th:text="${#temporals.format(comment.createdAt, 'MMM dd, yyyy HH:mm')}">
-                                            Date
-                                        </small>
-                                    </div>
-                                </div>
-                                <p class="mb-0" th:text="${comment.content}">Comment content...</p>
-                            </div>
-                        </div>
+                        <!-- Comments will be loaded here via JavaScript -->
                     </div>
 
-                    <div th:if="${#lists.isEmpty(comments)}" class="text-center py-4">
+                    <div th:if="${commentCount == 0}" class="text-center py-4">
                         <i class="fas fa-comments fa-2x text-muted mb-3"></i>
                         <p class="text-muted">No comments yet. Be the first to comment!</p>
                     </div>
@@ -275,6 +260,47 @@
                 }
             });
         });
+
+        // Load comments via AJAX
+        loadComments();
+
+        function loadComments() {
+            const storyId = [[ $ ,{storyid}]];
+            if (storyId) {
+                fetch(`/api/stories/${storyId}/comments`)
+                    .then(response => response.json())
+                    .then(comments => {
+                        const commentsList = document.getElementById('commentsList');
+                        if (comments.length === 0) {
+                            commentsList.innerHTML = `
+                                <div class="text-center py-4">
+                                    <i class="fas fa-comments fa-2x text-muted mb-3"></i>
+                                    <p class="text-muted">No comments yet. Be the first to comment!</p>
+                                </div>
+                            `;
+                        } else {
+                            commentsList.innerHTML = comments.map(comment => `
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <img src="${comment.author.profilePicture ? '/api/files/avatar/' + comment.author.profilePicture : '/images/avatar-placeholder.png'}"
+                                                 alt="Commenter" class="rounded-circle me-2" width="32" height="32">
+                                            <div>
+                                                <h6 class="mb-0">${comment.author.username}</h6>
+                                                <small class="text-muted">${new Date(comment.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</small>
+                                            </div>
+                                        </div>
+                                        <p class="mb-0">${comment.content}</p>
+                                    </div>
+                                </div>
+                            `).join('');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading comments:', error);
+                    });
+            }
+        }
     });
 </script>
 </body>

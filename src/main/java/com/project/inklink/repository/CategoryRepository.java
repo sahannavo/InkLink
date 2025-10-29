@@ -38,5 +38,5 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     // Get categories by story count range
     @Query("SELECT c FROM Category c WHERE (SELECT COUNT(s) FROM c.stories s WHERE s.status = 'PUBLISHED') BETWEEN :min AND :max")
-    List<Category> findByStoryCountBetween(@Param("min") Long min, @Param("max") Long max);
+    List<Category> findByStoryCountBetween(@Param("min") Long min, @Param("max")Long max);
 }

@@ -4,6 +4,7 @@ import com.project.inklink.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -49,7 +50,9 @@ public class SecurityConfig {
                                 "/profile/**", "/stories/create", "/stories/my",
                                 "/stories/edit/**", "/stories/delete/**",
                                 "/api/stories/user/**", "/api/user/**",
-                                "/dashboard"
+                                "/dashboard",
+                                "/api/comments/**",
+                                "/api/notifications/**"
                         ).authenticated()
                         // Admin endpoints
                         .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")

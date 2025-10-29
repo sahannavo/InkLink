@@ -3,7 +3,6 @@ package com.project.inklink.controller;
 import com.project.inklink.dto.UserRegistrationDto;
 import com.project.inklink.entity.User;
 import com.project.inklink.service.UserService;
-import com.project.inklink.service.ValidationService;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,11 +16,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class AuthController {
 
     private final UserService userService;
-    private final ValidationService validationService;
 
-    public AuthController(UserService userService, ValidationService validationService) {
+    public AuthController(UserService userService) {
         this.userService = userService;
-        this.validationService = validationService;
     }
 
     @GetMapping("/login")
@@ -31,31 +28,38 @@ public class AuthController {
 
     @GetMapping("/register")
     public String showRegistrationForm(Model model) {
-        model.addAttribute("user", new UserRegistrationDto());
+        // Check if user attribute already exists to avoid overwriting in case of errors
+        if (!model.containsAttribute("user")) {
+            model.addAttribute("user", new UserRegistrationDto());
+        }
         return "auth/register";
     }
 
     @PostMapping("/register")
     public String registerUser(@Valid @ModelAttribute("user") UserRegistrationDto userDto,
                                BindingResult result,
-                               Model model,
                                RedirectAttributes redirectAttributes) {
 
-        // Custom validation
-        if (userService.emailExists(userDto.getEmail())) {
+        // Custom validation - only check if there are no field validation errors first
+        if (!result.hasFieldErrors("email") && userService.emailExists(userDto.getEmail())) {
             result.rejectValue("email", "error.user", "Email already registered");
         }
 
-        if (userService.usernameExists(userDto.getUsername())) {
+        if (!result.hasFieldErrors("username") && userService.usernameExists(userDto.getUsername())) {
             result.rejectValue("username", "error.user", "Username already taken");
         }
 
-        if (!userDto.getPassword().equals(userDto.getConfirmPassword())) {
+        if (!result.hasFieldErrors("confirmPassword") &&
+                !userDto.getPassword().equals(userDto.getConfirmPassword())) {
             result.rejectValue("confirmPassword", "error.user", "Passwords do not match");
         }
 
         if (result.hasErrors()) {
-            return "auth/register";
+            // Add the user DTO back to flash attributes to preserve form data
+            redirectAttributes.addFlashAttribute("user", userDto);
+            // Add BindingResult to flash attributes
+            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.user", result);
+            return "redirect:/register";
         }
 
         try {
@@ -67,15 +71,17 @@ public class AuthController {
             user.setRole("USER");
             user.setEnabled(true);
 
-            User registeredUser = userService.registerUser(user);
+            userService.registerUser(user);
 
             redirectAttributes.addFlashAttribute("success",
                     "Registration successful! Please login with your credentials.");
             return "redirect:/login?success";
 
         } catch (Exception e) {
-            model.addAttribute("error", "Registration failed: " + e.getMessage());
-            return "auth/register";
+            // Add error message and preserve form data
+            redirectAttributes.addFlashAttribute("error", "Registration failed: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("user", userDto);
+            return "redirect:/register";
         }
     }
 

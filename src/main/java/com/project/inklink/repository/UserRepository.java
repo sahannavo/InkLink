@@ -40,5 +40,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // Performance optimized query for user details with stories count
     @Query("SELECT u, COUNT(s) as storyCount FROM User u LEFT JOIN Story s ON s.author = u AND s.status = 'PUBLISHED' WHERE u.id = :userId GROUP BY u")
-    Optional<Object[]> findUserWithStats(@Param("userId") Long userId);
+    Optional<Object[]> findUserWithStats(@Param("userId")Long userId);
 }

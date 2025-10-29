@@ -122,7 +122,7 @@ public class ValidationService {
         if (query.length() > 100) {
             throw new IllegalArgumentException("Search query too long");
         }
-        if (query.matches(".*[<>\"'].*")) {
+        if (query.matches(".[<>\"'].")) {
             throw new IllegalArgumentException("Search query contains invalid characters");
         }
     }
@@ -163,14 +163,6 @@ public class ValidationService {
         }
     }
 
-    private boolean isValidEmail(String email) {
-        return email != null && EMAIL_PATTERN.matcher(email).matches();
-    }
-
-    private boolean isValidUsername(String username) {
-        return username != null && USERNAME_PATTERN.matcher(username).matches();
-    }
-
     public void validateFileUpload(String originalFilename, long size) {
         if (originalFilename == null || originalFilename.trim().isEmpty()) {
             throw new IllegalArgumentException("File name cannot be empty");
@@ -197,6 +189,33 @@ public class ValidationService {
         if (!List.of("jpg", "jpeg", "png", "gif", "webp").contains(extension)) {
             throw new IllegalArgumentException("Only image files (JPEG, PNG, GIF, WEBP) are allowed");
         }
+    }
+
+    public void validateCommentContent(String content) {
+        if (content == null || content.trim().isEmpty()) {
+            throw new IllegalArgumentException("Comment content cannot be empty");
+        }
+
+        if (content.length() > 1000) {
+            throw new IllegalArgumentException("Comment must be less than 1000 characters");
+        }
+
+        if (content.trim().length() < 1) {
+            throw new IllegalArgumentException("Comment must contain at least 1 character");
+        }
+
+        // Check for excessive whitespace
+        if (content.trim().length() < content.length() / 2) {
+            throw new IllegalArgumentException("Comment contains excessive whitespace");
+        }
+    }
+
+    public void validateNotificationAccess(Long notificationId, Long userId) {
+        if (notificationId == null || userId == null) {
+            throw new IllegalArgumentException("Notification ID and User ID are required");
+        }
+
+        // Additional validation logic can be added here
     }
 
     // Additional validation methods that might be useful
@@ -229,5 +248,13 @@ public class ValidationService {
                 throw new IllegalArgumentException("Content contains inappropriate language");
             }
         }
+    }
+
+    private boolean isValidEmail(String email) {
+        return email != null && EMAIL_PATTERN.matcher(email).matches();
+    }
+
+    private boolean isValidUsername(String username) {
+        return username != null && USERNAME_PATTERN.matcher(username).matches();
     }
 }
