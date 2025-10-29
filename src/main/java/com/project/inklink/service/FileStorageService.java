@@ -1,87 +1,71 @@
 package com.project.inklink.service;
 
+
 import com.project.inklink.config.FileStorageProperties;
+import com.project.inklink.exception.FileStorageException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.Arrays;
-import java.util.List;
+import java.nio.file.*;
+import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
 public class FileStorageService {
 
-    private final Path fileStorageLocation;
-    private final List<String> allowedContentTypes = Arrays.asList(
-            "image/jpeg", "image/png", "image/gif", "image/webp"
-    );
+    private final Path uploadRoot;
+    private static final long MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+    private static final Set<String> ALLOWED_EXT = Set.of("jpg", "jpeg", "png", "gif", "webp");
 
     @Autowired
-    public FileStorageService(FileStorageProperties fileStorageProperties) {
-        // FIXED: Added null check and default value
-        String uploadDir = fileStorageProperties != null ? fileStorageProperties.getUploadDir() : "./uploads";
-        this.fileStorageLocation = Paths.get(uploadDir).toAbsolutePath().normalize();
-
+    public FileStorageService(FileStorageProperties props) {
+        this.uploadRoot = Paths.get(props.getUploadDir()).toAbsolutePath().normalize();
         try {
-            Files.createDirectories(this.fileStorageLocation);
-        } catch (Exception ex) {
-            throw new RuntimeException("Could not create the directory where the uploaded files will be stored.", ex);
+            Files.createDirectories(this.uploadRoot);
+        } catch (IOException ex) {
+            throw new FileStorageException("Could not create upload directory", ex);
         }
     }
 
     public String storeFile(MultipartFile file) {
-        // Validate file
         if (file == null || file.isEmpty()) {
-            throw new RuntimeException("File is empty");
+            throw new FileStorageException("File is empty");
         }
 
-        // Check file size (2MB max)
-        if (file.getSize() > 2 * 1024 * 1024) {
-            throw new RuntimeException("File size exceeds 2MB limit");
+        if (file.getSize() > MAX_FILE_SIZE) {
+            throw new FileStorageException("File size exceeds 2MB limit");
         }
 
-        // Check file type
-        String contentType = file.getContentType();
-        if (contentType == null || !allowedContentTypes.contains(contentType)) {
-            throw new RuntimeException("Only image files (JPEG, PNG, GIF, WEBP) are allowed");
+        String original = StringUtils.cleanPath(file.getOriginalFilename());
+        int idx = original.lastIndexOf('.');
+        if (idx <= 0) {
+            throw new FileStorageException("File must have an extension");
+        }
+        String ext = original.substring(idx + 1).toLowerCase(Locale.ROOT);
+        if (!ALLOWED_EXT.contains(ext)) {
+            throw new FileStorageException("Invalid file type. Allowed: " + ALLOWED_EXT);
         }
 
-        // Generate unique filename
-        String originalFileName = StringUtils.cleanPath(file.getOriginalFilename());
-        String fileExtension = "";
-        if (originalFileName.contains(".")) {
-            fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
-        }
-        String fileName = UUID.randomUUID().toString() + fileExtension;
+        String filename = UUID.randomUUID().toString() + "." + ext;
+        Path target = this.uploadRoot.resolve(filename);
 
         try {
-            // Copy file to target location
-            Path targetLocation = this.fileStorageLocation.resolve(fileName);
-            Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-
-            return fileName;
-        } catch (IOException ex) {
-            throw new RuntimeException("Could not store file " + fileName + ". Please try again!", ex);
+            Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+            return filename;
+        } catch (IOException e) {
+            throw new FileStorageException("Failed to store file", e);
         }
     }
 
-    public void deleteFile(String fileName) {
-        try {
-            Path filePath = this.fileStorageLocation.resolve(fileName).normalize();
-            Files.deleteIfExists(filePath);
-        } catch (IOException ex) {
-            throw new RuntimeException("Could not delete file " + fileName, ex);
+    public Path resolveFile(String filename) {
+        Path file = uploadRoot.resolve(filename).normalize();
+        if (!Files.exists(file) || !file.startsWith(uploadRoot)) {
+            throw new FileStorageException("File not found: " + filename);
         }
-    }
-
-    public Path loadFile(String fileName) {
-        return fileStorageLocation.resolve(fileName).normalize();
+        return file;
     }
 }

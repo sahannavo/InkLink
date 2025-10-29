@@ -1,107 +1,81 @@
 package com.project.inklink.controller;
 
-import com.project.inklink.entity.User;
+import com.project.inklink.exception.FileStorageException;
 import com.project.inklink.service.FileStorageService;
-import com.project.inklink.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.servlet.ServletContext;
+import java.net.MalformedURLException;
 import java.nio.file.Path;
-import java.util.HashMap;
+import java.security.Principal;
 import java.util.Map;
-import java.util.Optional;
 
-@Controller
+@RestController
 @RequestMapping("/api/files")
 public class FileUploadController {
 
-    @Autowired
-    private FileStorageService fileStorageService;
+    private final FileStorageService storageService;
+    private final ServletContext servletContext;
 
     @Autowired
-    private UserService userService;
+    public FileUploadController(FileStorageService storageService, ServletContext servletContext) {
+        this.storageService = storageService;
+        this.servletContext = servletContext;
+    }
 
-    @PostMapping("/upload-avatar")
-    public ResponseEntity<?> uploadAvatar(
-            @RequestParam("file") MultipartFile file,
-            Authentication authentication) {
-
+    /**
+     * Uploads an avatar image. Returns JSON with filename and access URL.
+     * Authentication is recommended; here Principal is optional.
+     */
+    @PostMapping(value = "/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadAvatar(@RequestPart("file") MultipartFile file,
+                                          @AuthenticationPrincipal Principal principal) {
         try {
-            // Get current user
-            String email = authentication.getName();
-            Optional<User> userOptional = userService.findByEmail(email);
-
-            if (userOptional.isEmpty()) {
-                return ResponseEntity.badRequest().body("User not found");
-            }
-
-            User user = userOptional.get();
-
-            // Store the file
-            String fileName = fileStorageService.storeFile(file);
-
-            // Delete old avatar if exists
-            if (user.getProfilePicture() != null) {
-                fileStorageService.deleteFile(user.getProfilePicture());
-            }
-
-            // Update user profile picture
-            user.setProfilePicture(fileName);
-            userService.saveUser(user);
-
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Avatar uploaded successfully");
-            response.put("fileName", fileName);
-            response.put("fileUrl", "/api/files/avatar/" + fileName);
-
-            return ResponseEntity.ok(response);
-
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            String filename = storageService.storeFile(file);
+            String base = "/api/files/avatar/";
+            String url = base + filename;
+            // Optionally associate filename with the authenticated user here
+            return ResponseEntity.ok(Map.of("fileName", filename, "url", url));
+        } catch (FileStorageException ex) {
+            return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
         }
     }
 
-    @GetMapping("/avatar/{fileName:.+}")
-    @ResponseBody
-    public ResponseEntity<?> serveAvatar(@PathVariable String fileName) {
+    /**
+     * Serve avatar by filename. Simple streaming endpoint.
+     */
+    @GetMapping("/avatar/{filename:.+}")
+    public ResponseEntity<Resource> serveAvatar(@PathVariable String filename) {
         try {
-            Path file = fileStorageService.loadFile(fileName);
-            Resource resource = new UrlResource(file.toUri());
-
-            if (resource.exists() || resource.isReadable()) {
-                String contentType = determineContentType(fileName);
-                return ResponseEntity.ok()
-                        .contentType(MediaType.parseMediaType(contentType))
-                        .body(resource);
-            } else {
+            Path filePath = storageService.resolveFile(filename);
+            Resource resource = new UrlResource(filePath.toUri());
+            if (!resource.exists() || !resource.isReadable()) {
                 return ResponseEntity.notFound().build();
             }
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
 
-    private String determineContentType(String fileName) {
-        String extension = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
-        switch (extension) {
-            case "jpg":
-            case "jpeg":
-                return "image/jpeg";
-            case "png":
-                return "image/png";
-            case "gif":
-                return "image/gif";
-            case "webp":
-                return "image/webp";
-            default:
-                return "application/octet-stream";
+            String contentType = servletContext.getMimeType(resource.getFile().getAbsolutePath());
+            if (contentType == null) {
+                contentType = "application/octet-stream";
+            }
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .cacheControl(CacheControl.noCache())
+                    .body(resource);
+        } catch (MalformedURLException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } catch (FileStorageException ex) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }
+
+
