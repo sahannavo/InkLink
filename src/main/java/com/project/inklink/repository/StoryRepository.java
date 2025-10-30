@@ -34,29 +34,31 @@ public interface StoryRepository extends JpaRepository<Story, Long> {
     Page<Story> findByCategory(@Param("categoryName") String categoryName, Pageable pageable);
 
     // Alternative category method for simple string category
-    @Query("SELECT s FROM Story s WHERE s.category = :category AND s.status = 'PUBLISHED'")
+    @Query("SELECT s FROM Story s WHERE s.category.name = :category AND s.status = 'PUBLISHED'")
     Page<Story> findByCategoryName(@Param("category") String category, Pageable pageable);
 
     // Trending stories (most viewed in last 7 days)
     @Query("SELECT s FROM Story s WHERE s.status = 'PUBLISHED' AND s.publishedAt >= :weekAgo " +
             "ORDER BY s.viewCount DESC, s.publishedAt DESC")
-    List<Story> findTrendingStories(@Param("weekAgo") LocalDateTime weekAgo, Pageable pageable);
+    Page<Story> findTrendingStories(@Param("weekAgo") LocalDateTime weekAgo, Pageable pageable);
 
     // Search stories by title or content
     @Query("SELECT s FROM Story s WHERE s.status = 'PUBLISHED' AND " +
             "(LOWER(s.title) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
-            "s.content LIKE CONCAT('%', :query, '%'))")
+            "LOWER(s.content) LIKE LOWER(CONCAT('%', :query, '%')))")
     Page<Story> searchByTitleOrContent(@Param("query") String query, Pageable pageable);
 
-    // Advanced search with multiple filters
+    // FIXED: Added @Query annotation to advancedSearch method
     @Query("SELECT s FROM Story s WHERE s.status = 'PUBLISHED' " +
+            "AND (:query IS NULL OR LOWER(s.title) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(s.content) LIKE LOWER(CONCAT('%', :query, '%'))) " +
             "AND (:categoryName IS NULL OR s.category.name = :categoryName) " +
             "AND (:authorId IS NULL OR s.author.id = :authorId) " +
             "AND (:minReadingTime IS NULL OR s.readingTime >= :minReadingTime) " +
             "AND (:maxReadingTime IS NULL OR s.readingTime <= :maxReadingTime) " +
             "AND (:startDate IS NULL OR s.publishedAt >= :startDate) " +
             "AND (:endDate IS NULL OR s.publishedAt <= :endDate)")
-    Page<Story> advancedSearch(@Param("categoryName") String categoryName,
+    Page<Story> advancedSearch(@Param("query") String query,
+                               @Param("categoryName") String categoryName,
                                @Param("authorId") Long authorId,
                                @Param("minReadingTime") Integer minReadingTime,
                                @Param("maxReadingTime") Integer maxReadingTime,
@@ -91,15 +93,15 @@ public interface StoryRepository extends JpaRepository<Story, Long> {
     // Count stories by author and status
     Long countByAuthorIdAndStatus(Long authorId, StoryStatus status);
 
-    // Find popular stories - Native query version
+    // Find popular stories - FIXED: Added date parameter
     @Query(value = "SELECT s.* FROM stories s " +
             "LEFT JOIN reactions r ON s.id = r.story_id AND r.type = 'LIKE' " +
-            "WHERE s.status = 'PUBLISHED' " +
+            "WHERE s.status = 'PUBLISHED' AND s.publishedAt >= :since " +
             "GROUP BY s.id " +
             "ORDER BY (s.view_count + COUNT(r.id)) DESC",
-            countQuery = "SELECT COUNT(*) FROM stories s WHERE s.status = 'PUBLISHED'",
+            countQuery = "SELECT COUNT(*) FROM stories s WHERE s.status = 'PUBLISHED' AND s.publishedAt >= :since",
             nativeQuery = true)
-    Page<Story> findPopularStories(Pageable pageable);
+    Page<Story> findPopularStories(@Param("since") LocalDateTime since, Pageable pageable);
 
     // Check if user is story owner
     @Query("SELECT CASE WHEN COUNT(s) > 0 THEN true ELSE false END " +

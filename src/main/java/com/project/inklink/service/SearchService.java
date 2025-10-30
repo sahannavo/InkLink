@@ -41,6 +41,7 @@ public class SearchService {
         }
 
         return storyRepository.advancedSearch(
+                filters.getQuery(), // ADD THIS - the missing query parameter
                 categoryName,
                 authorId,
                 minReadingTime,
@@ -52,7 +53,7 @@ public class SearchService {
     }
 
     public Page<Story> searchByCategory(String category, Pageable pageable) {
-        return storyRepository.findByCategory(category, pageable);
+        return storyRepository.findByCategoryName(category, pageable);
     }
 
     public Page<Story> searchByAuthor(Long authorId, Pageable pageable) {
@@ -70,10 +71,11 @@ public class SearchService {
 
     public List<Story> getTrendingStories(Pageable pageable) {
         LocalDateTime weekAgo = LocalDateTime.now().minusDays(7);
-        return storyRepository.findTrendingStories(weekAgo, pageable);
+        return storyRepository.findTrendingStories(weekAgo, pageable).getContent();
     }
 
     public Page<Story> getPopularStories(Pageable pageable) {
-        return storyRepository.findPopularStories(pageable);
-}
+        // FIXED: Added required date parameter
+        return storyRepository.findPopularStories(LocalDateTime.now().minusDays(30), pageable);
+    }
 }

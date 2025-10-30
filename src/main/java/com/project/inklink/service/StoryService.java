@@ -41,7 +41,7 @@ public class StoryService {
         validationService.validateStoryCreation(story);
 
         story.setAuthor(author);
-        story.setStatus(StoryStatus.DRAFT);
+        story.setStatus(StoryStatus.DRAFT.name());
         story.calculateReadingTime();
 
         Story savedStory = storyRepository.save(story);
@@ -93,11 +93,16 @@ public class StoryService {
                 .orElseThrow(() -> new IllegalArgumentException("Story not found"));
 
         if (!story.canPublish()) {
-            throw new IllegalStateException("Story cannot be published. Check content length and status.");
+            throw new IllegalStateException(
+                    "Story cannot be published. Requirements: " +
+                            "Status must be DRAFT, content length must be at least 50 characters. " +
+                            "Current status: " + story.getStatus() +
+                            ", content length: " + story.getContentLength());
         }
 
-        story.setStatus(StoryStatus.PUBLISHED);
+        story.setStatus(StoryStatus.PUBLISHED.name());
         story.setPublishedAt(LocalDateTime.now());
+        story.calculateReadingTime();
 
         Story publishedStory = storyRepository.save(story);
 
@@ -141,7 +146,7 @@ public class StoryService {
 
         // Log view for analytics (if published)
         story.ifPresent(s -> {
-            if (s.getStatus() == StoryStatus.PUBLISHED) {
+            if (StoryStatus.PUBLISHED.name().equals(s.getStatus())) {
                 analyticsService.logStoryView(s);
             }
         });
@@ -168,7 +173,7 @@ public class StoryService {
 
     @Cacheable(value = "trending", key = "#pageable.pageNumber + '-' + #pageable.pageSize")
     @Transactional(readOnly = true)
-    public List<Story> getTrendingStories(Pageable pageable) {
+    public Page<Story> getTrendingStories(Pageable pageable) {
         LocalDateTime weekAgo = LocalDateTime.now().minusDays(7);
         return storyRepository.findTrendingStories(weekAgo, pageable);
     }
@@ -234,6 +239,6 @@ public class StoryService {
                 new Object[]{"DRAFT", storyRepository.countByAuthorIdAndStatus(userId, StoryStatus.DRAFT)},
                 new Object[]{"PUBLISHED", storyRepository.countByAuthorIdAndStatus(userId, StoryStatus.PUBLISHED)},
                 new Object[]{"ARCHIVED", storyRepository.countByAuthorIdAndStatus(userId, StoryStatus.ARCHIVED)}
-                );
-}
+        );
+    }
 }

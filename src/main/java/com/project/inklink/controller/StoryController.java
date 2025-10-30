@@ -69,7 +69,7 @@ public class StoryController {
 
         if (storyOpt.isPresent()) {
             Story story = storyOpt.get();
-            if (story.getStatus() == StoryStatus.PUBLISHED) {
+            if (StoryStatus.PUBLISHED.name().equals(story.getStatus())) {
                 storyService.incrementViewCount(id);
             }
             model.addAttribute("story", story);
@@ -78,7 +78,6 @@ public class StoryController {
 
         return "error/404";
     }
-
     @GetMapping("/create")
     public String showCreateForm(Model model, @AuthenticationPrincipal UserDetails userDetails) {
         String email = userDetails.getUsername();

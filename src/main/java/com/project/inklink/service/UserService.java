@@ -37,15 +37,6 @@ public class UserService {
         // Email functionality commented out for now - can be enabled later
         System.out.println("User registered successfully: " + savedUser.getUsername() + " (" + savedUser.getEmail() + ")");
 
-        // Uncomment when email is configured:
-        /*
-        try {
-            emailService.sendWelcomeEmail(savedUser.getEmail(), savedUser.getUsername());
-        } catch (Exception e) {
-            System.err.println("Failed to send welcome email: " + e.getMessage());
-        }
-        */
-
         return savedUser;
     }
 
@@ -67,7 +58,7 @@ public class UserService {
 
         user.setUsername(userDetails.getUsername());
         user.setEmail(userDetails.getEmail());
-        user.setBio(userDetails.getBio());
+        user.setBio(userDetails.getBio()); // NOW WORKS - bio field exists
         user.setAvatarUrl(userDetails.getAvatarUrl());
 
         return userRepository.save(user);
@@ -117,7 +108,6 @@ public class UserService {
         return userRepository.countPublishedStoriesByUser(userId);
     }
 
-    // FIXED: Added proper implementation
     public List<User> findAllUsers() {
         return userRepository.findAll();
     }

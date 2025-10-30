@@ -4,7 +4,6 @@ import com.project.inklink.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -23,12 +22,12 @@ import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWrite
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
-public class SecurityConfig {
+public class EnhancedSecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
-    private static final String REMEMBER_ME_KEY = "inklink-remember-me-key-2025";
+    private static final String REMEMBER_ME_KEY = "inklink-enhanced-remember-me-key-2025";
 
-    public SecurityConfig(CustomUserDetailsService userDetailsService) {
+    public EnhancedSecurityConfig(CustomUserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
     }
 
@@ -38,22 +37,25 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         // Public endpoints
                         .requestMatchers(
-                                "/", "/home", "/register", "/login",
+                                "/", "/home", "/register", "/login", "/login?**",
                                 "/css/**", "/js/**", "/images/**", "/webjars/**",
                                 "/stories", "/stories/view/**", "/api/stories/public/**",
                                 "/categories", "/api/categories/**",
                                 "/error/**", "/h2-console/**",
-                                "/favicon.ico", "/robots.txt"
+                                "/favicon.ico", "/robots.txt", "/sitemap.xml",
+                                "/api/search/**", "/api/public/**"
                         ).permitAll()
                         // User endpoints
                         .requestMatchers(
                                 "/profile/**", "/stories/create", "/stories/my",
                                 "/stories/edit/**", "/stories/delete/**",
                                 "/api/stories/user/**", "/api/user/**",
-                                "/dashboard",
-                                "/api/comments/**",
-                                "/api/notifications/**"
+                                "/dashboard", "/user/**",
+                                "/api/comments/**", "/api/reactions/**",
+                                "/api/notifications/**", "/api/files/**"
                         ).authenticated()
+                        // Moderator endpoints
+                        .requestMatchers("/moderator/**", "/api/moderator/**").hasAnyRole("MODERATOR", "ADMIN")
                         // Admin endpoints
                         .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
@@ -96,7 +98,7 @@ public class SecurityConfig {
                         // Content Security Policy
                         .contentSecurityPolicy(csp -> csp
                                 .policyDirectives("default-src 'self'; " +
-                                        "script-src 'self' https://cdn.jsdelivr.net; " +
+                                        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; " +
                                         "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; " +
                                         "img-src 'self' data: blob: https://cdn.jsdelivr.net; " +
                                         "font-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; " +
@@ -157,22 +159,21 @@ public class SecurityConfig {
                 return;
             }
 
-            // Check if the request came from the default login page or was direct
-            String referer = request.getHeader("Referer");
-            if (referer != null && referer.contains("/login")) {
-                // Redirect based on role
-                boolean isAdmin = authentication.getAuthorities().stream()
-                        .anyMatch(grantedAuthority ->
-                                grantedAuthority.getAuthority().equals("ROLE_ADMIN"));
+            // Check user roles and redirect accordingly
+            boolean isAdmin = authentication.getAuthorities().stream()
+                    .anyMatch(grantedAuthority ->
+                            grantedAuthority.getAuthority().equals("ROLE_ADMIN"));
 
-                if (isAdmin) {
-                    response.sendRedirect("/admin/dashboard");
-                } else {
-                    response.sendRedirect("/dashboard");
-                }
+            boolean isModerator = authentication.getAuthorities().stream()
+                    .anyMatch(grantedAuthority ->
+                            grantedAuthority.getAuthority().equals("ROLE_MODERATOR"));
+
+            if (isAdmin) {
+                response.sendRedirect("/admin/dashboard");
+            } else if (isModerator) {
+                response.sendRedirect("/moderator/dashboard");
             } else {
-                // Default redirect to home
-                response.sendRedirect("/");
+                response.sendRedirect("/dashboard");
             }
         };
     }
