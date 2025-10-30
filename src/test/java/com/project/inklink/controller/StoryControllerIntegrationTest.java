@@ -38,19 +38,29 @@ class StoryControllerIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        // Create test user
+        // Create and save test user
         testUser = new User();
-        testUser.setUsername("testuser");
+        testUser.setUsername("testUser");
         testUser.setEmail("test@example.com");
         testUser.setPassword("password123");
         testUser.setRole("USER");
         testUser.setEnabled(true);
 
-        userService.registerUser(testUser);
+        // Check if user already exists to avoid duplicates
+        try {
+            User existingUser = userService.findUserByEmail("test@example.com");
+            if (existingUser != null) {
+                testUser = existingUser;
+            } else {
+                testUser = userService.registerUser(testUser);
+            }
+        } catch (Exception e) {
+            testUser = userService.registerUser(testUser);
+        }
     }
 
     @Test
-    @WithMockUser(username = "test@example.com")
+    @WithMockUser(username = "test@example.com", roles = "USER")
     void testCreateStory_ValidData_ShouldRedirect() throws Exception {
         mockMvc.perform(post("/stories/create")
                         .with(csrf())
@@ -62,7 +72,7 @@ class StoryControllerIntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "test@example.com")
+    @WithMockUser(username = "test@example.com", roles = "USER")
     void testCreateStory_InvalidData_ShouldReturnForm() throws Exception {
         mockMvc.perform(post("/stories/create")
                         .with(csrf())
@@ -75,13 +85,18 @@ class StoryControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = "test@example.com", roles = "USER")
     void testViewPublishedStory_ShouldReturnStoryPage() throws Exception {
         // Create a published story
         Story story = new Story();
         story.setTitle("Published Integration Test Story");
-        story.setContent("This is a valid story content for integration testing. It needs to be long enough to pass validation. ".repeat(3));
+        story.setContent("This is a valid story content for integration testing. It needs to be long enough to pass validation. "
+                + "This is a valid story content for integration testing. It needs to be long enough to pass validation. "
+                + "This is a valid story content for integration testing. It needs to be long enough to pass validation.");
         story.setAuthor(testUser);
-        story.setStatus(StoryStatus.PUBLISHED);
+
+        // FIX: Use string value instead of enum
+        story.setStatus("PUBLISHED"); // Direct string value
 
         Story savedStory = storyService.createStory(story, testUser);
 
@@ -92,19 +107,28 @@ class StoryControllerIntegrationTest {
     }
 
     @Test
-    void testViewNonExistentStory_ShouldReturn404() throws Exception {
-        mockMvc.perform(get("/stories/99999"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("error/404"));
-    }
-
-    @Test
-    @WithMockUser(username = "test@example.com")
+    @WithMockUser(username = "test@example.com", roles = "USER")
     void testGetMyStories_AuthenticatedUser_ShouldReturnPage() throws Exception {
+        // First create at least one story to ensure there's data
+        Story story = new Story();
+        story.setTitle("My Test Story");
+        story.setContent("This is a test story content for my stories page. It needs to be long enough to pass validation requirements.");
+        story.setAuthor(testUser);
+        story.setStatus("DRAFT"); // Direct string value
+
+        storyService.createStory(story, testUser);
+
         mockMvc.perform(get("/stories/my"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("stories/my-stories"))
                 .andExpect(model().attributeExists("stories"));
+    }
+
+    @Test
+    void testViewNonExistentStory_ShouldReturn404() throws Exception {
+        mockMvc.perform(get("/stories/99999"))
+                .andExpect(status().isNotFound())
+                .andExpect(view().name("error/404"));
     }
 
     @Test

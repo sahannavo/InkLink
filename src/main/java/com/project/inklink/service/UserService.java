@@ -111,4 +111,9 @@ public class UserService {
     public List<User> findAllUsers() {
         return userRepository.findAll();
     }
+
+    public User findUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElse(null); // or throw an exception
+    }
 }

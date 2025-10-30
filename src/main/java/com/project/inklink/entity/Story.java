@@ -127,4 +127,5 @@ public class Story {
     public Integer getContentLength() {
         return this.content != null ? this.content.length() : 0;
     }
+
 }
