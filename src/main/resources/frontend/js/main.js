@@ -92,22 +92,62 @@ class InkLinkApp {
     }
 
     // Story Management
-    async loadStories(page = 0, size = 12) {
+    async loadStories(resetPage = true) {
+        if (this.isLoading) return;
+
+        this.isLoading = true;
+        this.showLoadingState();
+
+        if (resetPage) {
+            this.currentPage = 0;
+        }
+
         try {
-            const response = await fetch(`${this.apiBaseUrl}/stories?page=${page}&size=${size}`, {
+            // Build query parameters
+            const params = new URLSearchParams({
+                page: this.currentPage,
+                size: this.pageSize,
+                sort: this.filters.sort
+            });
+
+            if (this.filters.search) params.append('search', this.filters.search);
+            if (this.filters.category) params.append('genre', this.filters.category);
+
+            const apiUrl = `/api/stories?${params.toString()}`;
+            console.log('Fetching stories from:', apiUrl);
+
+            const response = await fetch(apiUrl, {
+                method: 'GET',
                 credentials: 'include'
             });
 
+            console.log('Response status:', response.status);
+            console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
             if (response.ok) {
-                const data = await response.json();
-                this.stories = data.content || data;
-                this.displayStories(this.stories);
+                // Get the raw response text first to debug
+                const responseText = await response.text();
+                console.log('Raw response length:', responseText.length);
+                console.log('First 500 chars of response:', responseText.substring(0, 500));
+
+                try {
+                    const stories = JSON.parse(responseText);
+                    this.handleStoriesResponse(stories, resetPage);
+                } catch (parseError) {
+                    console.error('JSON Parse Error:', parseError);
+                    console.error('Problematic JSON section:', responseText.substring(201900, 201930));
+                    throw new Error(`Invalid JSON response: ${parseError.message}`);
+                }
             } else {
-                throw new Error('Failed to load stories');
+                const errorText = await response.text();
+                console.error('API Error Response:', errorText);
+                throw new Error(`HTTP ${response.status}: ${errorText}`);
             }
         } catch (error) {
-            console.error('Error loading stories:', error);
-            this.showNotification('Failed to load stories', 'error');
+            this.handleLoadError(error);
+        } finally {
+            this.isLoading = false;
+            this.hideLoadingState();
         }
     }
 

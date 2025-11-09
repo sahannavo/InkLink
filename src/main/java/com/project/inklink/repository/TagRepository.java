@@ -25,15 +25,19 @@ public interface TagRepository extends JpaRepository<Tag, Long> {
     // Check if tag exists by name
     Boolean existsByName(String name);
 
-    // Find popular tags (by story count)
-    @Query("SELECT t, COUNT(s) as storyCount FROM Tag t LEFT JOIN t.stories s WHERE s.status = 'PUBLISHED' GROUP BY t ORDER BY storyCount DESC")
-    Page<Object[]> findPopularTags(Pageable pageable);
+    // Find popular tags (by story count) - FIXED VERSION
+    @Query("SELECT t FROM Tag t LEFT JOIN t.stories s WHERE s.status = 'PUBLISHED' GROUP BY t ORDER BY COUNT(s) DESC")
+    Page<Tag> findPopularTags(Pageable pageable);
+
+    // Alternative: Simple version without status check
+    @Query("SELECT t FROM Tag t LEFT JOIN t.stories s GROUP BY t ORDER BY COUNT(s) DESC")
+    List<Tag> findTopPopularTags(Pageable pageable);
 
     // Find tags by story
     @Query("SELECT t FROM Tag t JOIN t.stories s WHERE s = :story")
     List<Tag> findByStory(@Param("story") Story story);
 
-    // Find tags with story count
+    // Find tags with story count (returns Object[] with Tag and count)
     @Query("SELECT t, COUNT(s) as storyCount FROM Tag t LEFT JOIN t.stories s GROUP BY t")
     List<Object[]> findAllWithStoryCount();
 

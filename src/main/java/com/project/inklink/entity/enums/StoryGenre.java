@@ -1,12 +1,15 @@
 package com.project.inklink.entity.enums;
 
-
 public enum StoryGenre {
     FICTION,
+    NON_FICTION,
+    FANTASY,
+    SCI_FI,
     MYSTERY,
     ROMANCE,
-    SCI_FI,
-    FANTASY,
     HORROR,
-    NON_FICTION
+    POETRY,
+    BIOGRAPHY,
+    HISTORICAL,
+    OTHER
 }

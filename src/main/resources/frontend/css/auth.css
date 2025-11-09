@@ -353,3 +353,141 @@ body {
 .visible {
     display: block !important;
 }
+/* Password Validation Styles */
+.password-input-container {
+    position: relative;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #666;
+    font-size: 16px;
+    padding: 5px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.password-toggle:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.validation-container {
+    margin-top: 15px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.validation-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: #6c757d;
+    transition: all 0.3s ease;
+}
+
+.validation-item:last-child {
+    margin-bottom: 0;
+}
+
+.validation-icon {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    font-size: 10px;
+    background-color: #e9ecef;
+    color: transparent;
+    transition: all 0.3s ease;
+}
+
+.validation-item.valid {
+    color: #198754;
+}
+
+.validation-item.valid .validation-icon {
+    background-color: #198754;
+    color: white;
+    content: "✓";
+}
+
+.validation-item.invalid {
+    color: #dc3545;
+}
+
+.validation-item.invalid .validation-icon {
+    background-color: #dc3545;
+    color: white;
+    content: "✕";
+}
+
+.strength-meter {
+    height: 6px;
+    background-color: #e9ecef;
+    border-radius: 3px;
+    margin: 15px 0 5px 0;
+    overflow: hidden;
+}
+
+.strength-meter-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 3px;
+    transition: all 0.3s ease;
+}
+
+.strength-text {
+    text-align: center;
+    font-weight: 500;
+    font-size: 12px;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+}
+
+/* Strength levels */
+.strength-weak {
+    background-color: #dc3545;
+}
+
+.strength-medium {
+    background-color: #fd7e14;
+}
+
+.strength-strong {
+    background-color: #198754;
+}
+
+.strength-very-strong {
+    background-color: #0d6efd;
+}
+
+/* Form validation states */
+.form-control:valid {
+    border-color: #198754;
+}
+
+.form-control:invalid {
+    border-color: #dc3545;
+}
+
+/* Animation for validation */
+@keyframes pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.validation-item.valid .validation-icon {
+    animation: pop 0.3s ease;
+}

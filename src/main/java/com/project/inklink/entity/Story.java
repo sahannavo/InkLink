@@ -1,5 +1,8 @@
 package com.project.inklink.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.project.inklink.entity.enums.StoryGenre;
 import com.project.inklink.entity.enums.StoryStatus;
 import jakarta.persistence.*;
@@ -10,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import com.fasterxml.jackson.annotation.*;
 
 @Entity
 @Table(name = "stories")
@@ -22,6 +26,8 @@ public class Story {
     @Size(min = 3, max = 255, message = "Title must be between 3 and 255 characters")
     @Column(nullable = false)
     private String title;
+
+    private Integer likeCount = 0;
 
     @NotBlank(message = "Content is required")
     @Lob
@@ -36,13 +42,16 @@ public class Story {
     @Column(nullable = false)
     private StoryStatus status = StoryStatus.DRAFT;
 
+    @Column(nullable = false)
     private Integer readCount = 0;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", nullable = false)
+    @JsonBackReference // Prevents serialization of author back to stories
     private User author;
 
     @OneToMany(mappedBy = "story", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference // Manages serialization of comments
     private List<Comment> comments = new ArrayList<>();
 
     @ManyToMany
@@ -118,6 +127,9 @@ public class Story {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    //like count
+    public Integer getLikeCount() { return likeCount; }
+    public void setLikeCount(Integer likeCount) { this.likeCount = likeCount; }
 
     // Utility methods
     public void addComment(Comment comment) {

@@ -19,7 +19,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static com.project.inklink.util.PaginationUtil.createPageable;
@@ -35,7 +37,7 @@ public class StoryController {
     private CommentService commentService;
 
     @Autowired
-    private UserService userService;  // ADD THIS LINE - IT WAS MISSING
+    private UserService userService;
 
     // Get all published stories with pagination and filtering
     @GetMapping
@@ -92,7 +94,7 @@ public class StoryController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<ApiResponse> getStoriesByUser(@PathVariable Long userId) {
         try {
-            // In a real app, you'd have a service method for this
+            // You'll need to implement this method in UserService
             // For now, return empty array
             return ResponseEntity.ok(new ApiResponse(true, "User stories retrieved", List.of()));
 
@@ -264,6 +266,69 @@ public class StoryController {
         }
     }
 
+    // Like endpoints
+    @PostMapping("/{id}/like")
+    public ResponseEntity<ApiResponse> toggleLike(@PathVariable Long id, HttpServletRequest request) {
+        try {
+            User user = getCurrentUser(request);
+            if (user == null) {
+                return ResponseEntity.status(401)
+                        .body(new ApiResponse(false, "Authentication required"));
+            }
+
+            boolean liked = storyService.toggleLike(id, user.getId());
+
+            Map<String, Object> responseData = new HashMap<>();
+            responseData.put("liked", liked);
+            responseData.put("likeCount", storyService.getLikeCount(id));
+
+            return ResponseEntity.ok(new ApiResponse(true,
+                    liked ? "Story liked" : "Story unliked",
+                    responseData));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse(false, "Failed to toggle like: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{id}/like")
+    public ResponseEntity<ApiResponse> checkLike(@PathVariable Long id, HttpServletRequest request) {
+        try {
+            User user = getCurrentUser(request);
+            if (user == null) {
+                return ResponseEntity.status(401)
+                        .body(new ApiResponse(false, "Authentication required"));
+            }
+
+            boolean hasLiked = storyService.hasUserLikedStory(id, user.getId());
+
+            Map<String, Object> responseData = new HashMap<>();
+            responseData.put("liked", hasLiked);
+            responseData.put("likeCount", storyService.getLikeCount(id));
+
+            return ResponseEntity.ok(new ApiResponse(true,
+                    hasLiked ? "User has liked this story" : "User has not liked this story",
+                    responseData));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse(false, "Failed to check like status: " + e.getMessage()));
+        }
+    }
+
+    // View count endpoint
+    @PostMapping("/{id}/view")
+    public ResponseEntity<ApiResponse> incrementViewCount(@PathVariable Long id) {
+        try {
+            storyService.incrementReadCount(id);
+            return ResponseEntity.ok(new ApiResponse(true, "View count updated"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse(false, "Failed to update view count: " + e.getMessage()));
+        }
+    }
+
     // Utility methods
     private User getCurrentUser(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
@@ -271,13 +336,11 @@ public class StoryController {
             return null;
         }
 
-        // Get user ID from session (set by AuthController)
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             return null;
         }
 
-        // Load user from database using the injected userService
         return userService.getUserById(userId).orElse(null);
     }
 }

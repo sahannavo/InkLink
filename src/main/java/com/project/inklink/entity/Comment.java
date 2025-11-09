@@ -1,10 +1,11 @@
 package com.project.inklink.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
-
+import com.fasterxml.jackson.annotation.*;
 @Entity
 @Table(name = "comments")
 public class Comment {
@@ -20,10 +21,12 @@ public class Comment {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonBackReference // Prevents serialization of user back to comments
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "story_id", nullable = false)
+    @JsonBackReference // Prevents serialization of story back to comments
     private Story story;
 
     @Column(nullable = false)

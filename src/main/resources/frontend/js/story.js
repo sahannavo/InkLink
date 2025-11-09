@@ -15,24 +15,47 @@ class StoryPage {
     async init() {
         await this.checkAuthentication();
         this.setupEventListeners();
-        this.loadStory();
-        this.loadReadingSettings();
-        this.setupScrollProgress();
+        this.loadPopularTags();
+        this.loadStories();
+        this.updateStats();
+
+        // Only setup auth UI if the element exists
+        if (document.getElementById('authButtons')) {
+            await this.checkAuthentication();
+        }
     }
 
     getStoryIdFromURL() {
         const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get('id') || '1'; // Fallback for demo
+        return urlParams.get('id') || '1';
     }
 
     async checkAuthentication() {
-        const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
-        const userData = localStorage.getItem('user');
+        try {
+            const response = await fetch('/api/auth/me', {
+                method: 'GET',
+                credentials: 'include'
+            });
 
-        if (isAuthenticated && userData) {
-            this.currentUser = JSON.parse(userData);
-            this.updateAuthUI();
-        } else {
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success && result.data) {
+                    this.currentUser = result.data;
+                    localStorage.setItem('currentUser', JSON.stringify(result.data));
+                } else {
+                    this.currentUser = null;
+                    localStorage.removeItem('currentUser');
+                }
+            } else {
+                this.currentUser = null;
+                localStorage.removeItem('currentUser');
+            }
+        } catch (error) {
+            console.error('Auth check failed:', error);
+            this.currentUser = null;
+            localStorage.removeItem('currentUser');
+        } finally {
+            // Always call updateAuthUI, but it will handle null elements
             this.updateAuthUI();
         }
     }
@@ -40,49 +63,61 @@ class StoryPage {
     updateAuthUI() {
         const authButtons = document.getElementById('authButtons');
 
+        // Add null check
+        if (!authButtons) {
+            console.warn('authButtons element not found on this page');
+            return;
+        }
+
         if (this.currentUser) {
             authButtons.innerHTML = `
-                <div class="user-menu">
-                    <div class="user-info">
-                        <div class="user-avatar">${this.currentUser.username?.charAt(0)?.toUpperCase() || 'U'}</div>
-                        <span class="username">${this.currentUser.username}</span>
-                    </div>
+            <div class="user-menu">
+                <div class="user-info">
+                    <div class="user-avatar">${this.currentUser.username?.charAt(0)?.toUpperCase() || 'U'}</div>
+                    <span class="username">${this.currentUser.username}</span>
                 </div>
-            `;
-
-            // Update comment avatar
-            const commentAvatar = document.getElementById('commentUserAvatar');
-            if (commentAvatar) {
-                commentAvatar.textContent = this.currentUser.username?.charAt(0)?.toUpperCase() || 'U';
-            }
+                <div class="user-dropdown">
+                    <a href="#profile" class="dropdown-item">Profile</a>
+                    <a href="#my-stories" class="dropdown-item">My Stories</a>
+                    <a href="#settings" class="dropdown-item">Settings</a>
+                    <button class="dropdown-item logout-btn" onclick="storiesPage.logout()">Logout</button>
+                </div>
+            </div>
+        `;
         } else {
             authButtons.innerHTML = `
-                <div class="auth-buttons">
-                    <a href="login.html" class="btn btn-outline">Log In</a>
-                    <a href="register.html" class="btn btn-primary">Sign Up</a>
-                </div>
-            `;
-
-            // Hide comment form for guests
-            document.getElementById('addComment').classList.add('hidden');
+            <div class="auth-buttons">
+                <a href="login.html" class="btn btn-outline">Log In</a>
+                <a href="register.html" class="btn btn-primary">Sign Up</a>
+            </div>
+        `;
         }
     }
 
     setupEventListeners() {
         // Like button
-        document.getElementById('likeBtn').addEventListener('click', () => {
-            this.toggleLike();
-        });
+        const likeBtn = document.getElementById('likeBtn');
+        if (likeBtn) {
+            likeBtn.addEventListener('click', () => {
+                this.toggleLike();
+            });
+        }
 
         // Comment scroll button
-        document.getElementById('commentScrollBtn').addEventListener('click', () => {
-            this.scrollToComments();
-        });
+        const commentScrollBtn = document.getElementById('commentScrollBtn');
+        if (commentScrollBtn) {
+            commentScrollBtn.addEventListener('click', () => {
+                this.scrollToComments();
+            });
+        }
 
         // Share functionality
-        document.getElementById('shareBtn').addEventListener('click', (e) => {
-            this.toggleShareDropdown(e);
-        });
+        const shareBtn = document.getElementById('shareBtn');
+        if (shareBtn) {
+            shareBtn.addEventListener('click', (e) => {
+                this.toggleShareDropdown(e);
+            });
+        }
 
         // Share options
         document.querySelectorAll('.share-option').forEach(option => {
@@ -92,50 +127,80 @@ class StoryPage {
         });
 
         // Comment submission
-        document.getElementById('submitComment').addEventListener('click', () => {
-            this.submitComment();
-        });
+        const submitComment = document.getElementById('submitComment');
+        if (submitComment) {
+            submitComment.addEventListener('click', () => {
+                this.submitComment();
+            });
+        }
 
-        document.getElementById('cancelComment').addEventListener('click', () => {
-            this.clearCommentForm();
-        });
+        const cancelComment = document.getElementById('cancelComment');
+        if (cancelComment) {
+            cancelComment.addEventListener('click', () => {
+                this.clearCommentForm();
+            });
+        }
 
         // Comment sort
-        document.getElementById('commentsSort').addEventListener('change', (e) => {
-            this.sortComments(e.target.value);
-        });
+        const commentsSort = document.getElementById('commentsSort');
+        if (commentsSort) {
+            commentsSort.addEventListener('change', (e) => {
+                this.sortComments(e.target.value);
+            });
+        }
 
         // Load more comments
-        document.getElementById('loadMoreComments').addEventListener('click', () => {
-            this.loadMoreComments();
-        });
+        const loadMoreComments = document.getElementById('loadMoreComments');
+        if (loadMoreComments) {
+            loadMoreComments.addEventListener('click', () => {
+                this.loadMoreComments();
+            });
+        }
 
         // Follow buttons
-        document.getElementById('followBtn').addEventListener('click', () => {
-            this.toggleFollow();
-        });
+        const followBtn = document.getElementById('followBtn');
+        if (followBtn) {
+            followBtn.addEventListener('click', () => {
+                this.toggleFollow();
+            });
+        }
 
-        document.getElementById('followBtnLarge').addEventListener('click', () => {
-            this.toggleFollow();
-        });
+        const followBtnLarge = document.getElementById('followBtnLarge');
+        if (followBtnLarge) {
+            followBtnLarge.addEventListener('click', () => {
+                this.toggleFollow();
+            });
+        }
 
         // Reading tools
-        document.getElementById('fontSizeBtn').addEventListener('click', () => {
-            this.openFontSizeModal();
-        });
+        const fontSizeBtn = document.getElementById('fontSizeBtn');
+        if (fontSizeBtn) {
+            fontSizeBtn.addEventListener('click', () => {
+                this.openFontSizeModal();
+            });
+        }
 
-        document.getElementById('themeBtn').addEventListener('click', () => {
-            this.toggleTheme();
-        });
+        const themeBtn = document.getElementById('themeBtn');
+        if (themeBtn) {
+            themeBtn.addEventListener('click', () => {
+                this.toggleTheme();
+            });
+        }
 
-        document.getElementById('scrollTopBtn').addEventListener('click', () => {
-            this.scrollToTop();
-        });
+        const scrollTopBtn = document.getElementById('scrollTopBtn');
+        if (scrollTopBtn) {
+            scrollTopBtn.addEventListener('click', () => {
+                this.scrollToTop();
+            });
+        }
 
         // Font size modal
-        document.getElementById('closeFontModal').addEventListener('click', () => {
-            this.closeFontSizeModal();
-        });
+        const closeFontModal = document.getElementById('closeFontModal');
+        if (closeFontModal) {
+            closeFontModal.addEventListener('click', () => {
+                this.closeFontSizeModal();
+            });
+        }
 
         document.querySelectorAll('.font-option').forEach(option => {
             option.addEventListener('click', (e) => {
@@ -157,11 +222,14 @@ class StoryPage {
         });
 
         // Enter key for comment submission
-        document.getElementById('commentText').addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.key === 'Enter') {
-                this.submitComment();
-            }
-        });
+        const commentText = document.getElementById('commentText');
+        if (commentText) {
+            commentText.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.key === 'Enter') {
+                    this.submitComment();
+                }
+            });
+        }
     }
 
     async loadStory() {
@@ -169,7 +237,21 @@ class StoryPage {
             this.showLoadingState();
 
             // Load story data
-            this.story = await api.stories.getById(this.storyId);
+            const response = await fetch(`/api/stories/${this.storyId}`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success) {
+                    this.story = result.data;
+                } else {
+                    throw new Error(result.message || 'Failed to load story');
+                }
+            } else {
+                throw new Error(`HTTP ${response.status}: Failed to load story`);
+            }
 
             // Load comments
             await this.loadComments();
@@ -193,30 +275,22 @@ class StoryPage {
         if (!this.story) return;
 
         // Basic story info
-        document.getElementById('storyTitle').textContent = this.story.title;
-        document.getElementById('storyCategory').textContent =
-            this.formatCategory(this.story.category);
-        document.getElementById('authorName').textContent =
-            this.story.author?.username || 'Unknown Author';
-        document.getElementById('authorNameBio').textContent =
-            this.story.author?.username || 'Unknown Author';
-        document.getElementById('storyDate').textContent =
-            new Date(this.story.createdAt).toLocaleDateString();
+        this.setElementText('storyTitle', this.story.title);
+        this.setElementText('storyCategory', this.formatCategory(this.story.genre));
+        this.setElementText('authorName', this.story.author?.username || 'Unknown Author');
+        this.setElementText('authorNameBio', this.story.author?.username || 'Unknown Author');
+        this.setElementText('storyDate', new Date(this.story.createdAt).toLocaleDateString());
 
         // Stats
-        document.getElementById('viewCount').textContent =
-            this.formatNumber(this.story.viewCount || 0);
-        document.getElementById('likeCount').textContent =
-            this.formatNumber(this.story.likeCount || 0);
-        document.getElementById('commentCount').textContent =
-            this.formatNumber(this.story.commentCount || 0);
-        document.getElementById('likeCountBtn').textContent =
-            this.formatNumber(this.story.likeCount || 0);
+        this.setElementText('viewCount', this.formatNumber(this.story.readCount || 0));
+        this.setElementText('likeCount', this.formatNumber(this.story.likeCount || 0));
+        this.setElementText('commentCount', this.formatNumber(this.comments.length || 0));
+        this.setElementText('likeCountBtn', this.formatNumber(this.story.likeCount || 0));
 
         // Author avatars
         const avatarText = this.story.author?.username?.charAt(0)?.toUpperCase() || 'U';
-        document.getElementById('authorAvatar').textContent = avatarText;
-        document.getElementById('authorAvatarLarge').textContent = avatarText;
+        this.setElementText('authorAvatar', avatarText);
+        this.setElementText('authorAvatarLarge', avatarText);
 
         // Tags
         this.displayTags();
@@ -234,8 +308,14 @@ class StoryPage {
         document.title = `${this.story.title} - InkLink`;
     }
 
+    setElementText(id, text) {
+        const element = document.getElementById(id);
+        if (element) element.textContent = text;
+    }
+
     displayTags() {
         const tagsContainer = document.getElementById('storyTags');
+        if (!tagsContainer) return;
 
         if (!this.story.tags || this.story.tags.length === 0) {
             tagsContainer.innerHTML = '<span class="story-tag">No tags</span>';
@@ -249,13 +329,13 @@ class StoryPage {
 
     displayContent() {
         const contentContainer = document.getElementById('storyContent');
+        if (!contentContainer) return;
 
         if (!this.story.content) {
             contentContainer.innerHTML = '<p>No content available.</p>';
             return;
         }
 
-        // Simple formatting - you might want to use a markdown parser
         const formattedContent = this.story.content
             .split('\n')
             .map(paragraph => {
@@ -274,13 +354,34 @@ class StoryPage {
                 this.comments = [];
             }
 
-            const comments = await api.comments.getByStory(this.storyId);
-            this.comments = reset ? comments : [...this.comments, ...comments];
+            const response = await fetch(`/api/stories/${this.storyId}/comments`, {
+                method: 'GET',
+                credentials: 'include'
+            });
 
-            this.displayComments();
+            if (response.ok) {
+                const result = await response.json();
+
+                // Handle different response formats
+                let commentsData = [];
+                if (result.success && result.data) {
+                    commentsData = result.data; // ApiResponse format
+                } else if (Array.isArray(result)) {
+                    commentsData = result; // Direct array format
+                } else if (result.content && Array.isArray(result.content)) {
+                    commentsData = result.content; // Page format
+                }
+
+                this.comments = reset ? commentsData : [...this.comments, ...commentsData];
+                this.displayComments();
+            } else {
+                throw new Error('Failed to load comments');
+            }
 
         } catch (error) {
             console.error('Error loading comments:', error);
+            this.comments = [];
+            this.displayComments();
         }
     }
 
@@ -288,7 +389,17 @@ class StoryPage {
         const commentsList = document.getElementById('commentsList');
         const commentsCount = document.getElementById('commentsCount');
 
-        commentsCount.textContent = `(${this.comments.length})`;
+        if (commentsCount) {
+            commentsCount.textContent = `(${this.comments.length})`;
+        }
+
+        if (!commentsList) return;
+
+        // Safety check - ensure comments is an array
+        if (!this.comments || !Array.isArray(this.comments)) {
+            console.warn('Comments is not an array, converting:', this.comments);
+            this.comments = [];
+        }
 
         if (this.comments.length === 0) {
             commentsList.innerHTML = `
@@ -306,11 +417,13 @@ class StoryPage {
                 <div class="comment-header">
                     <div class="comment-author">
                         <div class="comment-avatar">
-                            ${comment.author?.username?.charAt(0)?.toUpperCase() || 'U'}
+                            ${comment.user?.username?.charAt(0)?.toUpperCase() ||
+        comment.author?.username?.charAt(0)?.toUpperCase() || 'U'}
                         </div>
                         <div>
                             <div class="comment-author-name">
-                                ${this.escapeHtml(comment.author?.username || 'Unknown User')}
+                                ${this.escapeHtml(comment.user?.username ||
+            comment.author?.username || 'Unknown User')}
                             </div>
                             <div class="comment-date">
                                 ${new Date(comment.createdAt).toLocaleDateString()}
@@ -326,7 +439,7 @@ class StoryPage {
                         <i class="fas fa-heart"></i>
                         <span>${comment.likeCount || 0}</span>
                     </button>
-                    ${this.currentUser && this.currentUser.id === comment.author?.id ? `
+                    ${this.currentUser && this.currentUser.id === (comment.user?.id || comment.author?.id) ? `
                         <button class="btn btn-outline btn-sm delete-comment" 
                                 onclick="storyPage.deleteComment(${comment.id})">
                             Delete
@@ -349,8 +462,23 @@ class StoryPage {
         try {
             if (!this.story.author?.id) return;
 
-            const stories = await api.stories.getByUser(this.story.author.id, 0, 3);
-            this.displayRelatedStories(stories);
+            const response = await fetch(`/api/stories/user/${this.story.author.id}?page=0&size=3`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                let stories = [];
+
+                if (result.success && result.data) {
+                    stories = result.data.content || result.data || [];
+                } else if (Array.isArray(result)) {
+                    stories = result;
+                }
+
+                this.displayRelatedStories(stories);
+            }
 
         } catch (error) {
             console.error('Error loading related stories:', error);
@@ -359,6 +487,7 @@ class StoryPage {
 
     displayRelatedStories(stories) {
         const container = document.getElementById('relatedStories');
+        if (!container) return;
 
         if (!stories || stories.length === 0) {
             container.innerHTML = '<p>No other stories from this author.</p>';
@@ -377,7 +506,7 @@ class StoryPage {
             <div class="related-story-card" onclick="storyPage.openStory(${story.id})">
                 <h3 class="related-story-title">${this.escapeHtml(story.title)}</h3>
                 <div class="related-story-meta">
-                    <span>${this.formatNumber(story.viewCount || 0)} views</span>
+                    <span>${this.formatNumber(story.readCount || 0)} views</span>
                     <span>${this.formatNumber(story.likeCount || 0)} likes</span>
                 </div>
             </div>
@@ -391,17 +520,30 @@ class StoryPage {
         }
 
         try {
-            const result = await api.likes.toggle(this.storyId);
+            const response = await fetch(`/api/stories/${this.storyId}/like`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
 
-            // Update UI immediately
-            this.updateLikeButton(result.liked);
+            if (response.ok) {
+                const result = await response.json();
 
-            // Update counts
-            const currentLikes = this.story.likeCount || 0;
-            this.story.likeCount = result.liked ? currentLikes + 1 : Math.max(0, currentLikes - 1);
-            this.story.liked = result.liked;
+                // Update UI immediately
+                this.updateLikeButton(result.liked);
 
-            this.updateLikeCounts();
+                // Update counts
+                const currentLikes = this.story.likeCount || 0;
+                this.story.likeCount = result.liked ? currentLikes + 1 : Math.max(0, currentLikes - 1);
+                this.story.liked = result.liked;
+
+                this.updateLikeCounts();
+
+            } else {
+                throw new Error('Failed to toggle like');
+            }
 
         } catch (error) {
             console.error('Error toggling like:', error);
@@ -411,6 +553,8 @@ class StoryPage {
 
     updateLikeButton(liked = null) {
         const likeBtn = document.getElementById('likeBtn');
+        if (!likeBtn) return;
+
         const isLiked = liked !== null ? liked : this.story?.liked;
 
         if (isLiked) {
@@ -420,17 +564,11 @@ class StoryPage {
             likeBtn.classList.remove('liked');
             likeBtn.innerHTML = '<i class="fas fa-heart"></i><span>Like</span>';
         }
-
-        // Update count
-        const countSpan = likeBtn.querySelector('.count');
-        if (countSpan) {
-            countSpan.textContent = this.formatNumber(this.story?.likeCount || 0);
-        }
     }
 
     updateLikeCounts() {
-        document.getElementById('likeCount').textContent = this.formatNumber(this.story.likeCount || 0);
-        document.getElementById('likeCountBtn').textContent = this.formatNumber(this.story.likeCount || 0);
+        this.setElementText('likeCount', this.formatNumber(this.story.likeCount || 0));
+        this.setElementText('likeCountBtn', this.formatNumber(this.story.likeCount || 0));
     }
 
     async submitComment() {
@@ -439,21 +577,36 @@ class StoryPage {
             return;
         }
 
-        const commentText = document.getElementById('commentText').value.trim();
+        const commentText = document.getElementById('commentText');
+        if (!commentText) return;
 
-        if (!commentText) {
+        const content = commentText.value.trim();
+
+        if (!content) {
             this.showNotification('Please enter a comment', 'error');
             return;
         }
 
         try {
-            await api.comments.add(this.storyId, commentText);
+            const response = await fetch(`/api/stories/${this.storyId}/comments`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ content })
+            });
 
-            this.clearCommentForm();
-            this.showNotification('Comment added successfully!', 'success');
+            if (response.ok) {
+                this.clearCommentForm();
+                this.showNotification('Comment added successfully!', 'success');
 
-            // Reload comments
-            await this.loadComments(true);
+                // Reload comments
+                await this.loadComments(true);
+
+            } else {
+                throw new Error('Failed to add comment');
+            }
 
         } catch (error) {
             console.error('Error adding comment:', error);
@@ -465,19 +618,27 @@ class StoryPage {
         if (!confirm('Are you sure you want to delete this comment?')) return;
 
         try {
-            await api.comments.delete(commentId);
-            this.showNotification('Comment deleted successfully!', 'success');
+            const response = await fetch(`/api/comments/${commentId}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
 
-            // Remove comment from UI
-            const commentElement = document.querySelector(`[data-comment-id="${commentId}"]`);
-            if (commentElement) {
-                commentElement.remove();
+            if (response.ok) {
+                this.showNotification('Comment deleted successfully!', 'success');
+
+                // Remove comment from UI
+                const commentElement = document.querySelector(`[data-comment-id="${commentId}"]`);
+                if (commentElement) {
+                    commentElement.remove();
+                }
+
+                // Update local comments array
+                this.comments = this.comments.filter(comment => comment.id !== commentId);
+                this.displayComments();
+
+            } else {
+                throw new Error('Failed to delete comment');
             }
-
-            // Update counts
-            this.story.commentCount = Math.max(0, (this.story.commentCount || 1) - 1);
-            document.getElementById('commentCount').textContent =
-                this.formatNumber(this.story.commentCount);
 
         } catch (error) {
             console.error('Error deleting comment:', error);
@@ -521,15 +682,23 @@ class StoryPage {
             return;
         }
 
-        // Note: Implement follow functionality in your backend
         this.showNotification('Follow functionality coming soon!', 'info');
     }
 
     async recordView() {
         try {
-            await api.analytics.recordView(this.storyId);
+            // Simple view recording - you might want to implement this in your backend
+            console.log('View recorded for story:', this.storyId);
+
+            // If you implement a view endpoint later:
+            // await fetch(`/api/stories/${this.storyId}/view`, {
+            //     method: 'POST',
+            //     credentials: 'include'
+            // });
+
         } catch (error) {
             console.error('Error recording view:', error);
+            // Silently fail - view counting is not critical
         }
     }
 
@@ -537,6 +706,8 @@ class StoryPage {
     setupScrollProgress() {
         window.addEventListener('scroll', () => {
             const progressBar = document.getElementById('progressBar');
+            if (!progressBar) return;
+
             const windowHeight = window.innerHeight;
             const documentHeight = document.documentElement.scrollHeight - windowHeight;
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
@@ -547,11 +718,13 @@ class StoryPage {
     }
 
     openFontSizeModal() {
-        document.getElementById('fontSizeModal').classList.remove('hidden');
+        const modal = document.getElementById('fontSizeModal');
+        if (modal) modal.classList.remove('hidden');
     }
 
     closeFontSizeModal() {
-        document.getElementById('fontSizeModal').classList.add('hidden');
+        const modal = document.getElementById('fontSizeModal');
+        if (modal) modal.classList.add('hidden');
     }
 
     setFontSize(size) {
@@ -609,12 +782,15 @@ class StoryPage {
     // Share functionality
     toggleShareDropdown(e) {
         const dropdown = document.getElementById('shareDropdown');
-        dropdown.classList.toggle('show');
-        e.stopPropagation();
+        if (dropdown) {
+            dropdown.classList.toggle('show');
+        }
+        if (e) e.stopPropagation();
     }
 
     closeShareDropdown() {
-        document.getElementById('shareDropdown').classList.remove('show');
+        const dropdown = document.getElementById('shareDropdown');
+        if (dropdown) dropdown.classList.remove('show');
     }
 
     handleShare(platform) {
@@ -647,9 +823,12 @@ class StoryPage {
 
     // Navigation
     scrollToComments() {
-        document.getElementById('commentsSection').scrollIntoView({
-            behavior: 'smooth'
-        });
+        const commentsSection = document.getElementById('commentsSection');
+        if (commentsSection) {
+            commentsSection.scrollIntoView({
+                behavior: 'smooth'
+            });
+        }
     }
 
     scrollToTop() {
@@ -662,7 +841,8 @@ class StoryPage {
 
     // Utility Methods
     clearCommentForm() {
-        document.getElementById('commentText').value = '';
+        const commentText = document.getElementById('commentText');
+        if (commentText) commentText.value = '';
     }
 
     calculateReadingTime() {
@@ -670,8 +850,11 @@ class StoryPage {
         const words = content.split(/\s+/).length;
         const readingTime = Math.ceil(words / 200); // 200 words per minute
 
-        document.getElementById('readingTime').querySelector('span').textContent =
-            `${readingTime} min read`;
+        const readingTimeElement = document.getElementById('readingTime');
+        if (readingTimeElement) {
+            const span = readingTimeElement.querySelector('span');
+            if (span) span.textContent = `${readingTime} min read`;
+        }
     }
 
     formatCategory(category) {
@@ -688,16 +871,15 @@ class StoryPage {
     }
 
     escapeHtml(text) {
+        if (!text) return '';
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
     }
 
     sortComments(sortBy) {
-        // Implement comment sorting logic
         console.log('Sorting comments by:', sortBy);
-        // You would sort this.comments based on the sortBy parameter
-        // and then call this.displayComments()
+        // Implement comment sorting logic here
     }
 
     loadMoreComments() {
@@ -707,12 +889,15 @@ class StoryPage {
 
     // UI State Management
     showLoadingState() {
-        document.getElementById('storyContent').innerHTML = `
-            <div class="content-loading">
-                <div class="loading-spinner"></div>
-                <p>Loading story content...</p>
-            </div>
-        `;
+        const storyContent = document.getElementById('storyContent');
+        if (storyContent) {
+            storyContent.innerHTML = `
+                <div class="content-loading">
+                    <div class="loading-spinner"></div>
+                    <p>Loading story content...</p>
+                </div>
+            `;
+        }
     }
 
     hideLoadingState() {
@@ -720,18 +905,20 @@ class StoryPage {
     }
 
     showErrorState(message) {
-        document.getElementById('storyContent').innerHTML = `
-            <div class="content-loading">
-                <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--danger); margin-bottom: 1rem;"></i>
-                <h3>Error Loading Story</h3>
-                <p>${message}</p>
-                <button class="btn btn-primary" onclick="location.reload()">Try Again</button>
-            </div>
-        `;
+        const storyContent = document.getElementById('storyContent');
+        if (storyContent) {
+            storyContent.innerHTML = `
+                <div class="content-loading">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--danger); margin-bottom: 1rem;"></i>
+                    <h3>Error Loading Story</h3>
+                    <p>${message}</p>
+                    <button class="btn btn-primary" onclick="location.reload()">Try Again</button>
+                </div>
+            `;
+        }
     }
 
     showNotification(message, type = 'info') {
-        // Use existing notification system
         if (window.app) {
             window.app.showNotification(message, type);
         } else if (window.authManager) {
@@ -744,6 +931,7 @@ class StoryPage {
     logout() {
         localStorage.removeItem('isAuthenticated');
         localStorage.removeItem('user');
+        localStorage.removeItem('currentUser');
         window.location.reload();
     }
 }

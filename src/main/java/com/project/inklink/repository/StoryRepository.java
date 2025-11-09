@@ -29,15 +29,14 @@ public interface StoryRepository extends JpaRepository<Story, Long> {
     // Find stories by author and status
     List<Story> findByAuthorAndStatus(User author, StoryStatus status);
 
-    // Find stories by genre and status with pagination
-    @Query("SELECT s FROM Story s WHERE s.status = 'PUBLISHED' AND s.genre = :genre")
-    Page<Story> findByGenreAndStatus(@Param("genre") String genre, Pageable pageable);
+    // FIXED: Find stories by genre and status with pagination - Use StoryGenre enum instead of String
+    Page<Story> findByGenreAndStatus(StoryGenre genre, StoryStatus status, Pageable pageable);
 
-    // Search published stories by title or content
+    // FIXED: Search published stories by title or content - Renamed to match StoryService
     @Query("SELECT s FROM Story s WHERE s.status = 'PUBLISHED' AND " +
-            "(LOWER(s.title) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-            "LOWER(s.content) LIKE LOWER(CONCAT('%', :search, '%')))")
-    Page<Story> searchPublishedStories(@Param("search") String search, Pageable pageable);
+            "(LOWER(s.title) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+            "LOWER(s.content) LIKE LOWER(CONCAT('%', :searchTerm, '%')))")
+    Page<Story> searchStories(@Param("searchTerm") String searchTerm, Pageable pageable);
 
     // Find most popular stories (by read count)
     @Query("SELECT s FROM Story s WHERE s.status = 'PUBLISHED' ORDER BY s.readCount DESC")
@@ -72,4 +71,19 @@ public interface StoryRepository extends JpaRepository<Story, Long> {
     // Find stories by status with custom sorting
     @Query("SELECT s FROM Story s WHERE s.status = :status")
     Page<Story> findByStatusWithCustomSort(@Param("status") StoryStatus status, Pageable pageable);
+
+    // Additional useful methods
+
+    // Find stories by status and genre
+    Page<Story> findByStatusAndGenre(StoryStatus status, StoryGenre genre, Pageable pageable);
+
+    // Count all published stories
+    Long countByStatus(StoryStatus status);
+
+    // Find top stories by like count
+    @Query("SELECT s FROM Story s WHERE s.status = 'PUBLISHED' ORDER BY s.likeCount DESC")
+    Page<Story> findTopStoriesByLikes(Pageable pageable);
+
+    // Find stories by author and status with pagination
+    Page<Story> findByAuthorAndStatus(User author, StoryStatus status, Pageable pageable);
 }

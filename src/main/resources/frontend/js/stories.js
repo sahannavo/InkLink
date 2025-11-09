@@ -18,7 +18,12 @@ class StoriesPage {
     }
 
     async init() {
-        await this.checkAuthentication();
+        // Check if authButtons exists before doing authentication
+        const authButtons = document.getElementById('authButtons');
+        if (authButtons) {
+            await this.checkAuthentication();
+        }
+
         this.setupEventListeners();
         this.loadPopularTags();
         this.loadStories();
@@ -57,30 +62,30 @@ class StoriesPage {
     }
 
     updateAuthUI() {
-        const authButtons = document.getElementById('authButtons');
+        const authButtons = document.getElementById("auth-buttons");
 
         if (this.currentUser) {
             authButtons.innerHTML = `
-                <div class="user-menu">
-                    <div class="user-info">
-                        <div class="user-avatar">${this.currentUser.username?.charAt(0)?.toUpperCase() || 'U'}</div>
-                        <span class="username">${this.currentUser.username}</span>
-                    </div>
-                    <div class="user-dropdown">
-                        <a href="#profile" class="dropdown-item">Profile</a>
-                        <a href="#my-stories" class="dropdown-item">My Stories</a>
-                        <a href="#settings" class="dropdown-item">Settings</a>
-                        <button class="dropdown-item logout-btn" onclick="storiesPage.logout()">Logout</button>
-                    </div>
+            <div class="user-menu">
+                <div class="user-info">
+                    <div class="user-avatar"></div>
+                    <span class="username">${this.currentUser.username}</span>
                 </div>
-            `;
+                <div class="user-dropdown">
+                    <a href="#profile">Profile</a>
+                    <a href="#my-stories">My Stories</a>
+                    <a href="#settings">Settings</a>
+                    <button class="logout-btn">Logout</button>
+                </div>
+            </div>
+        `;
         } else {
             authButtons.innerHTML = `
-                <div class="auth-buttons">
-                    <a href="login.html" class="btn btn-outline">Log In</a>
-                    <a href="register.html" class="btn btn-primary">Sign Up</a>
-                </div>
-            `;
+            <div class="auth-buttons">
+                <a href="login.html">Login</a>
+                <a href="register.html">Register</a>
+            </div>
+        `;
         }
     }
 
@@ -248,18 +253,68 @@ class StoriesPage {
             if (this.filters.search) params.append('search', this.filters.search);
             if (this.filters.category) params.append('genre', this.filters.category);
 
-            const response = await fetch(`/api/stories?${params.toString()}`, {
+            const apiUrl = `/api/stories?${params.toString()}`;
+            console.log('🔍 Fetching stories from:', apiUrl);
+
+            const response = await fetch(apiUrl, {
                 method: 'GET',
-                credentials: 'include' // Important for session
+                credentials: 'include'
             });
 
-            if (response.ok) {
-                const stories = await response.json();
-                this.handleStoriesResponse(stories, resetPage);
-            } else {
-                throw new Error('Failed to load stories');
+            console.log('📊 Response status:', response.status, response.statusText);
+            console.log('📋 Response headers:', Object.fromEntries(response.headers.entries()));
+
+            // Get raw response text first
+            const responseText = await response.text();
+            console.log('📏 Raw response length:', responseText.length);
+
+            // Check for common issues
+            if (responseText.length === 0) {
+                throw new Error('Empty response from server');
             }
+
+            if (responseText.includes('<!DOCTYPE html>') || responseText.includes('<html>')) {
+                console.error('❌ Server returned HTML instead of JSON. Possible issues:');
+                console.error('   - API endpoint not found');
+                console.error('   - Authentication required');
+                console.error('   - Server error page');
+                console.log('📄 HTML preview:', responseText.substring(0, 500));
+                throw new Error('Server returned HTML instead of JSON');
+            }
+
+            if (responseText.includes('Whitelabel Error Page')) {
+                console.error('❌ Spring Boot error page detected');
+                throw new Error('Server error: Whitelabel Error Page');
+            }
+
+            // Log the problematic area
+            const problemStart = Math.max(0, 203360);
+            const problemEnd = Math.min(responseText.length, 203380);
+            console.log('🔍 Problematic JSON area:', responseText.substring(problemStart, problemEnd));
+
+            // Check for special characters
+            const specialChars = responseText.substring(problemStart, problemEnd).match(/[^\x20-\x7E]/g);
+            if (specialChars) {
+                console.error('🚫 Special characters found:', specialChars);
+            }
+
+            try {
+                const stories = JSON.parse(responseText);
+                console.log('✅ JSON parsed successfully');
+                this.handleStoriesResponse(stories, resetPage);
+            } catch (parseError) {
+                console.error('❌ JSON Parse Error details:', {
+                    message: parseError.message,
+                    position: parseError instanceof SyntaxError ? parseError.at : 'unknown'
+                });
+
+                // Try to find where the JSON breaks
+                this.debugJSON(responseText, 203370);
+                throw parseError;
+            }
+
         } catch (error) {
+            console.error('💥 Load stories error:', error);
             this.handleLoadError(error);
         } finally {
             this.isLoading = false;
@@ -267,10 +322,84 @@ class StoriesPage {
         }
     }
 
+// Add this debug method to your StoriesPage class
+    debugJSON(jsonString, problemPosition) {
+        console.log('🔍 JSON Debug Analysis:');
+
+        // Show context around the problem
+        const start = Math.max(0, problemPosition - 50);
+        const end = Math.min(jsonString.length, problemPosition + 50);
+        console.log('Context around problem:', jsonString.substring(start, end));
+
+        // Check for common issues
+        const context = jsonString.substring(problemPosition - 10, problemPosition + 10);
+        console.log('Problem area:', context);
+
+        // Check for unescaped characters
+        const unescaped = context.match(/[\\"\\n\\r\\t]/g);
+        if (unescaped) {
+            console.log('Unescaped characters found:', unescaped);
+        }
+
+        // Check if it's a string termination issue
+        const before = jsonString.substring(0, problemPosition);
+        const openQuotes = (before.match(/"/g) || []).length;
+        const closeQuotes = (before.match(/\\"/g) || []).length;
+        console.log('Quote balance - open:', openQuotes, 'escaped:', closeQuotes);
+    }
+
     handleStoriesResponse(response, resetPage) {
-        // Handle both array and page response formats
-        const stories = Array.isArray(response) ? response : (response.content || response.data || []);
-        this.totalPages = response.totalPages || 1;
+        console.log('🔍 Raw API response:', response); // Debug log
+
+        // Extract data from the ApiResponse format
+        let stories = [];
+        let totalPages = 1;
+
+        if (response && response.success) {
+            // Handle the ApiResponse format: {success: true, message: "...", data: {...}}
+            const responseData = response.data;
+
+            if (responseData && responseData.content && Array.isArray(responseData.content)) {
+                // If data is a Page object with content array
+                stories = responseData.content;
+                totalPages = responseData.totalPages || 1;
+                console.log(`✅ Loaded ${stories.length} stories, total pages: ${totalPages}`);
+            } else if (Array.isArray(responseData)) {
+                // If data is directly an array
+                stories = responseData;
+                console.log(`✅ Loaded ${stories.length} stories directly`);
+            } else if (responseData && Array.isArray(responseData)) {
+                // Additional check for array
+                stories = responseData;
+                console.log(`✅ Loaded ${stories.length} stories from data array`);
+            } else {
+                // Fallback: try to use data directly or empty array
+                stories = responseData || [];
+                console.warn('⚠️ Unexpected data format, using fallback:', responseData);
+            }
+        } else if (Array.isArray(response)) {
+            // If response is directly an array (fallback)
+            stories = response;
+            totalPages = 1;
+            console.log(`✅ Loaded ${stories.length} stories from direct array`);
+        } else if (response && response.content && Array.isArray(response.content)) {
+            // If response is Page format without ApiResponse wrapper
+            stories = response.content;
+            totalPages = response.totalPages || 1;
+            console.log(`✅ Loaded ${stories.length} stories from page content`);
+        } else {
+            // Handle error response or completely unexpected format
+            console.warn('❌ API returned error or unexpected format:', response);
+            stories = [];
+        }
+
+        // Ensure stories is always an array
+        if (!Array.isArray(stories)) {
+            console.error('❌ Stories is not an array, converting to empty array:', stories);
+            stories = [];
+        }
+
+        this.totalPages = totalPages;
 
         if (resetPage) {
             this.displayStories(stories);
@@ -293,13 +422,46 @@ class StoriesPage {
         const storiesGrid = document.getElementById('storiesGrid');
         if (!storiesGrid) return;
 
+        // Safety check
+        if (!stories || !Array.isArray(stories)) {
+            console.error('displayStories: stories is not an array:', stories);
+            stories = [];
+        }
+
         if (stories.length === 0) {
-            storiesGrid.innerHTML = '';
+            storiesGrid.innerHTML = '<div class="no-stories">No stories found</div>';
             return;
         }
 
-        storiesGrid.innerHTML = stories.map(story => this.createStoryCard(story)).join('');
-        this.attachStoryEventListeners();
+        try {
+            storiesGrid.innerHTML = stories.map(story => this.createStoryCard(story)).join('');
+            this.attachStoryEventListeners();
+        } catch (error) {
+            console.error('Error displaying stories:', error);
+            storiesGrid.innerHTML = '<div class="error-message">Error displaying stories</div>';
+        }
+    }
+
+    appendStories(stories) {
+        const storiesGrid = document.getElementById('storiesGrid');
+        if (!storiesGrid) return;
+
+        // Safety check
+        if (!stories || !Array.isArray(stories)) {
+            console.error('appendStories: stories is not an array:', stories);
+            return;
+        }
+
+        if (stories.length === 0) {
+            return;
+        }
+
+        try {
+            storiesGrid.innerHTML += stories.map(story => this.createStoryCard(story)).join('');
+            this.attachStoryEventListeners();
+        } catch (error) {
+            console.error('Error appending stories:', error);
+        }
     }
 
     appendStories(stories) {
@@ -311,44 +473,56 @@ class StoriesPage {
     }
 
     createStoryCard(story) {
+        // Safety checks
+        if (!story) {
+            console.warn('createStoryCard: story is null or undefined');
+            return '<div class="story-card error">Invalid story data</div>';
+        }
+
         const isLiked = story.liked || false;
         const excerpt = story.content ?
             story.content.substring(0, 150) + (story.content.length > 150 ? '...' : '') :
             'No content available';
 
+        // Safe property access with fallbacks
+        const authorName = story.author?.username || 'Unknown Author';
+        const authorInitial = authorName.charAt(0).toUpperCase();
+        const tags = story.tags || [];
+        const displayTags = tags.slice(0, 3);
+
         return `
-            <div class="story-card ${this.viewMode === 'list' ? 'list-view' : ''}" data-story-id="${story.id}">
-                <div class="story-image">
-                    <i class="fas fa-${this.getStoryIcon(story.genre)}"></i>
+        <div class="story-card ${this.viewMode === 'list' ? 'list-view' : ''}" data-story-id="${story.id || ''}">
+            <div class="story-image">
+                <i class="fas fa-${this.getStoryIcon(story.genre)}"></i>
+            </div>
+            <div class="story-content">
+                <h3 class="story-title">${this.escapeHtml(story.title || 'Untitled')}</h3>
+                <div class="story-author">
+                    <div class="author-avatar">${authorInitial}</div>
+                    <span>${this.escapeHtml(authorName)}</span>
                 </div>
-                <div class="story-content">
-                    <h3 class="story-title">${this.escapeHtml(story.title)}</h3>
-                    <div class="story-author">
-                        <div class="author-avatar">${story.author?.username?.charAt(0)?.toUpperCase() || 'U'}</div>
-                        <span>${this.escapeHtml(story.author?.username || 'Unknown Author')}</span>
-                    </div>
-                    <p class="story-excerpt">${this.escapeHtml(excerpt)}</p>
-                    <div class="story-tags">
-                        ${story.tags?.slice(0, 3).map(tag =>
-            `<span class="story-tag">${this.escapeHtml(tag.name)}</span>`
-        ).join('') || ''}
-                    </div>
-                    <div class="story-stats">
-                        <span><i class="fas fa-eye"></i> ${story.viewCount || 0}</span>
-                        <span><i class="fas fa-heart"></i> ${story.likeCount || 0}</span>
-                        <span><i class="fas fa-comment"></i> ${story.commentCount || 0}</span>
-                    </div>
-                    <div class="story-actions">
-                        <button class="btn btn-outline read-story">Read Story</button>
-                        ${this.currentUser ? `
-                            <button class="btn btn-icon ${isLiked ? 'liked' : ''}" data-action="like">
-                                <i class="fas fa-heart"></i>
-                            </button>
-                        ` : ''}
-                    </div>
+                <p class="story-excerpt">${this.escapeHtml(excerpt)}</p>
+                <div class="story-tags">
+                    ${displayTags.map(tag =>
+            `<span class="story-tag">${this.escapeHtml(tag.name || 'tag')}</span>`
+        ).join('')}
+                </div>
+                <div class="story-stats">
+                    <span><i class="fas fa-eye"></i> ${story.viewCount || 0}</span>
+                    <span><i class="fas fa-heart"></i> ${story.likeCount || 0}</span>
+                    <span><i class="fas fa-comment"></i> ${story.commentCount || 0}</span>
+                </div>
+                <div class="story-actions">
+                    <button class="btn btn-outline read-story">Read Story</button>
+                    ${this.currentUser ? `
+                        <button class="btn btn-icon ${isLiked ? 'liked' : ''}" data-action="like">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                    ` : ''}
                 </div>
             </div>
-        `;
+        </div>
+    `;
     }
 
     attachStoryEventListeners() {
@@ -690,7 +864,16 @@ class StoriesPage {
 
     handleLoadError(error) {
         console.error('Error loading stories:', error);
-        this.showNotification('Failed to load stories. Please try again.', 'error');
+
+        // More detailed error information
+        if (error.name === 'SyntaxError') {
+            this.showNotification('Server returned invalid data. Please try again.', 'error');
+        } else if (error.message.includes('HTTP')) {
+            this.showNotification('Server error. Please try again later.', 'error');
+        } else {
+            this.showNotification('Failed to load stories. Please try again.', 'error');
+        }
+
         this.showEmptyState();
     }
 

@@ -750,34 +750,54 @@ class StoryCreator {
         try {
             this.showLoadingState('Publishing your story...');
 
+            // Map frontend category to backend genre with validation
+            const categoryToGenreMap = {
+                'FICTION': 'FICTION',
+                'NON_FICTION': 'NON_FICTION',
+                'FANTASY': 'FANTASY',
+                'SCI_FI': 'SCI_FI',
+                'MYSTERY': 'MYSTERY',
+                'ROMANCE': 'ROMANCE',
+                'HORROR': 'HORROR',
+                'POETRY': 'POETRY',
+                'BIOGRAPHY': 'BIOGRAPHY',
+                'HISTORICAL': 'HISTORICAL', // Add this mapping
+                'OTHER': 'OTHER'
+            };
+
+            const genre = categoryToGenreMap[this.storyData.category];
+
+            if (!genre) {
+                throw new Error(`Invalid genre: ${this.storyData.category}. Please select a valid genre.`);
+            }
+
             // Send only the fields that backend expects
             const storyData = {
                 title: this.storyData.title,
                 content: this.storyData.content,
-                genre: this.storyData.category, // Map "category" to "genre"
-                status: "PUBLISHED" // Always publish as published for now
+                genre: genre, // Use mapped genre value
+                status: "PUBLISHED"
             };
 
-            console.log('Sending story data:', storyData); // Debug log
+            console.log('Sending story data:', storyData);
 
-            // FIXED: Add credentials to API call
             const response = await fetch('/api/stories', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                credentials: 'include', // Important: include session cookies
+                credentials: 'include',
                 body: JSON.stringify(storyData)
             });
 
             if (!response.ok) {
                 const errorData = await response.json();
-                console.error('Backend error:', errorData); // Debug log
+                console.error('Backend error:', errorData);
                 throw new Error(errorData.message || 'Failed to publish story');
             }
 
             const result = await response.json();
-            console.log('Publish success:', result); // Debug log
+            console.log('Publish success:', result);
 
             this.clearDraft();
             this.hideLoadingState();
@@ -798,6 +818,15 @@ class StoryCreator {
             this.showNotification(error.message || 'Failed to publish story. Please try again.', 'error');
         }
     }
+    validateGenre(category) {
+        const validGenres = [
+            'FICTION', 'NON_FICTION', 'FANTASY', 'SCI_FI',
+            'MYSTERY', 'ROMANCE', 'HORROR', 'POETRY',
+            'BIOGRAPHY', 'HISTORICAL', 'OTHER'
+        ];
+
+        return validGenres.includes(category);
+    }
 
     validateForm(isPreview = false) {
         const errors = [];
@@ -808,6 +837,8 @@ class StoryCreator {
 
         if (!this.storyData.category) {
             errors.push('Please select a genre');
+        } else if (!this.validateGenre(this.storyData.category)) {
+            errors.push('Please select a valid genre');
         }
 
         if (!this.storyData.content || this.storyData.content.trim().length < 10) {

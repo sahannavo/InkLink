@@ -1,5 +1,7 @@
 package com.project.inklink.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.project.inklink.entity.enums.UserRole;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -9,6 +11,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import com.fasterxml.jackson.annotation.*;
 
 @Entity
 @Table(name = "users")
@@ -32,6 +35,7 @@ public class User implements Serializable {
     @NotBlank(message = "Password is required")
     @Size(min = 6, message = "Password must be at least 6 characters")
     @Column(nullable = false)
+    @JsonIgnore // Never serialize password to JSON
     private String password;
 
     @Enumerated(EnumType.STRING)
@@ -40,11 +44,12 @@ public class User implements Serializable {
 
     private String profilePicture;
 
-    // CHANGE THESE TO LAZY FETCHING AND REMOVE CASCADE
     @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
+    @JsonManagedReference("user-stories") // Manages serialization of stories
     private List<Story> stories = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @JsonIgnore // Ignore comments to avoid circular references
     private List<Comment> comments = new ArrayList<>();
 
     @Column(nullable = false)
@@ -108,9 +113,6 @@ public class User implements Serializable {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
-
-    // REMOVE the utility methods that modify relationships to avoid serialization issues
-    // or keep them but be aware they might cause LazyInitializationException
 
     @Override
     public String toString() {

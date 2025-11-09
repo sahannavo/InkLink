@@ -243,3 +243,141 @@ class AuthManager {
 document.addEventListener('DOMContentLoaded', function() {
     new AuthManager();
 });
+
+// Password Validation Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const passwordInput = document.getElementById('password');
+    const togglePassword = document.getElementById('togglePassword');
+    const validationItems = {
+        length: document.getElementById('length'),
+        uppercase: document.getElementById('uppercase'),
+        lowercase: document.getElementById('lowercase'),
+        number: document.getElementById('number'),
+        special: document.getElementById('special')
+    };
+    const strengthMeter = document.getElementById('strengthMeter');
+    const strengthText = document.getElementById('strengthText');
+    const registerForm = document.getElementById('registerForm');
+    const passwordError = document.getElementById('passwordError');
+
+    // Toggle password visibility
+    if (togglePassword) {
+        togglePassword.addEventListener('click', function() {
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                togglePassword.textContent = '🙈';
+            } else {
+                passwordInput.type = 'password';
+                togglePassword.textContent = '👁️';
+            }
+        });
+    }
+
+    // Validate password on input
+    if (passwordInput) {
+        passwordInput.addEventListener('input', function() {
+            const password = passwordInput.value;
+
+            // Check each validation rule
+            const validations = {
+                length: password.length >= 8,
+                uppercase: /[A-Z]/.test(password),
+                lowercase: /[a-z]/.test(password),
+                number: /\d/.test(password),
+                special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
+            };
+
+            // Update validation UI
+            Object.keys(validations).forEach(key => {
+                if (validationItems[key]) {
+                    if (validations[key]) {
+                        validationItems[key].classList.add('valid');
+                        validationItems[key].classList.remove('invalid');
+                    } else {
+                        validationItems[key].classList.add('invalid');
+                        validationItems[key].classList.remove('valid');
+                    }
+                }
+            });
+
+            // Calculate password strength
+            updatePasswordStrength(password, validations);
+
+            // Clear error message when user starts typing
+            if (passwordError) {
+                passwordError.textContent = '';
+            }
+        });
+
+        // Validate password on form submission
+        if (registerForm) {
+            registerForm.addEventListener('submit', function(e) {
+                const password = passwordInput.value;
+                const validations = {
+                    length: password.length >= 8,
+                    uppercase: /[A-Z]/.test(password),
+                    lowercase: /[a-z]/.test(password),
+                    number: /\d/.test(password),
+                    special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
+                };
+
+                const allValid = Object.values(validations).every(valid => valid);
+
+                if (!allValid && passwordError) {
+                    e.preventDefault();
+                    passwordError.textContent = 'Please meet all password requirements';
+                    passwordInput.focus();
+                }
+            });
+        }
+    }
+
+    function updatePasswordStrength(password, validations) {
+        if (!password) {
+            strengthMeter.style.width = '0%';
+            strengthText.textContent = 'Password Strength';
+            strengthText.className = 'strength-text';
+            return;
+        }
+
+        let strength = 0;
+        const requirements = Object.values(validations);
+
+        requirements.forEach(valid => {
+            if (valid) strength++;
+        });
+
+        // Additional strength calculation based on password length
+        if (password.length >= 12) strength++;
+        if (password.length >= 16) strength++;
+
+        const maxStrength = requirements.length + 2; // +2 for length bonuses
+        const strengthPercent = (strength / maxStrength) * 100;
+
+        strengthMeter.style.width = `${strengthPercent}%`;
+
+        // Set colors and text based on strength
+        if (strengthPercent < 40) {
+            strengthMeter.className = 'strength-meter-fill strength-weak';
+            strengthText.textContent = 'Weak Password';
+            strengthText.style.color = '#dc3545';
+        } else if (strengthPercent < 60) {
+            strengthMeter.className = 'strength-meter-fill strength-medium';
+            strengthText.textContent = 'Medium Password';
+            strengthText.style.color = '#fd7e14';
+        } else if (strengthPercent < 80) {
+            strengthMeter.className = 'strength-meter-fill strength-strong';
+            strengthText.textContent = 'Strong Password';
+            strengthText.style.color = '#198754';
+        } else {
+            strengthMeter.className = 'strength-meter-fill strength-very-strong';
+            strengthText.textContent = 'Very Strong Password';
+            strengthText.style.color = '#0d6efd';
+        }
+    }
+
+    // Initial validation state
+    if (passwordInput) {
+        passwordInput.dispatchEvent(new Event('input'));
+    }
+});

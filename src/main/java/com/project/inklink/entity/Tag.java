@@ -1,10 +1,12 @@
 package com.project.inklink.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.util.HashSet;
 import java.util.Set;
+import com.fasterxml.jackson.annotation.*;
 
 @Entity
 @Table(name = "tags")
@@ -19,6 +21,7 @@ public class Tag {
     private String name;
 
     @ManyToMany(mappedBy = "tags")
+    @JsonIgnore // Prevent circular reference with stories
     private Set<Story> stories = new HashSet<>();
 
     // Constructors

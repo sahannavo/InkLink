@@ -90,3 +90,13 @@ CREATE INDEX idx_reactions_user_type ON reactions(user_id, type);
 CREATE INDEX idx_comments_story ON comments(story_id);
 CREATE INDEX idx_comments_user ON comments(user_id);
 CREATE INDEX idx_comments_created ON comments(created_at);
+
+CREATE TABLE story_likes (
+                             id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                             story_id BIGINT NOT NULL,
+                             user_id BIGINT NOT NULL,
+                             liked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                             FOREIGN KEY (story_id) REFERENCES stories(id) ON DELETE CASCADE,
+                             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                             UNIQUE KEY unique_story_user (story_id, user_id)
+);
