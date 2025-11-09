@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InkLink - Share Your Stories</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<!-- Bubbles Background -->
+<div class="bubbles-container" id="bubblesContainer"></div>
+
+<!-- Floating Elements -->
+<div class="floating-element floating-1">
+    <i class="fas fa-pen-nib" style="font-size: 3rem; color: rgba(253, 187, 45, 0.7);"></i>
+</div>
+<div class="floating-element floating-2">
+    <i class="fas fa-book" style="font-size: 4rem; color: rgba(178, 31, 31, 0.7);"></i>
+</div>
+<div class="floating-element floating-3">
+    <i class="fas fa-feather-alt" style="font-size: 3.5rem; color: rgba(255, 255, 255, 0.7);"></i>
+</div>
+
+<!-- Navigation -->
+<nav class="navbar" id="navbar">
+    <div class="logo">
+        <i class="fas fa-pen-fancy logo-icon"></i>
+        <h1>InkLink</h1>
+    </div>
+    <div class="nav-links">
+        <a href="#home">Home</a>
+        <a href="#features">Features</a>
+        <a onclick="location.href='story.html' ">Stories</a>
+        <a onclick="location.href='Aboutus.html' ">About</a>
+    </div>
+    <div class="auth-buttons" id="authButtons">
+        <button class="btn btn-outline" onclick="window.location.href='login.html'">Log In</button>
+        <button class="btn btn-primary" onclick="window.location.href='register.html'">Sign Up</button>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero" id="home">
+    <div class="hero-content">
+        <h2>Share Your Stories With The World</h2>
+        <p>InkLink is a vibrant community where writers and readers connect. Share your creativity, discover amazing stories, and join a global network of storytellers.</p>
+        <div class="hero-buttons">
+            <button class="btn btn-primary btn-large pulse" onclick="window.location.href='register.html'">
+                Start Writing Now
+            </button>
+            <button class="btn btn-outline btn-large" onclick="window.location.href='stories.html'">
+                Explore Stories
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features" id="features">
+    <div class="section-title">
+        <h2>Why Choose InkLink?</h2>
+        <p>Our platform offers everything you need to share and discover incredible stories</p>
+    </div>
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-edit"></i>
+            </div>
+            <h3>Easy Writing</h3>
+            <p>Our intuitive editor makes writing and formatting your stories a breeze, with auto-save and rich text options.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <h3>Engage Community</h3>
+            <p>Connect with readers and writers, receive feedback, and build your audience in our supportive community.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h3>Track Performance</h3>
+            <p>Monitor your story's performance with detailed analytics on reads, likes, and reader engagement.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Stories Preview -->
+<section class="stories-preview" id="stories">
+    <div class="section-title">
+        <h2>Featured Stories</h2>
+        <p>Discover some of the most engaging stories from our community</p>
+    </div>
+    <div class="stories-grid">
+        <div class="story-card">
+            <div class="story-image">
+                <i class="fas fa-mountain"></i>
+            </div>
+            <div class="story-content">
+                <h3 class="story-title">The Last Summit</h3>
+                <div class="story-author">
+                    <div class="author-avatar">JS</div>
+                    <span>John Storyteller</span>
+                </div>
+                <p class="story-excerpt">A thrilling adventure about a group of climbers attempting to conquer the world's most dangerous peak...</p>
+                <div class="story-stats">
+                    <span><i class="fas fa-eye"></i> 2.4K reads</span>
+                    <span><i class="fas fa-heart"></i> 342 likes</span>
+                </div>
+            </div>
+        </div>
+        <div class="story-card">
+            <div class="story-image">
+                <i class="fas fa-microscope"></i>
+            </div>
+            <div class="story-content">
+                <h3 class="story-title">Echoes of Tomorrow</h3>
+                <div class="story-author">
+                    <div class="author-avatar">SW</div>
+                    <span>Sarah Writer</span>
+                </div>
+                <p class="story-excerpt">In a future where memories can be bought and sold, one woman discovers the terrible cost of forgetting...</p>
+                <div class="story-stats">
+                    <span><i class="fas fa-eye"></i> 5.1K reads</span>
+                    <span><i class="fas fa-heart"></i> 892 likes</span>
+                </div>
+            </div>
+        </div>
+        <div class="story-card">
+            <div class="story-image">
+                <i class="fas fa-ghost"></i>
+            </div>
+            <div class="story-content">
+                <h3 class="story-title">Whispers in the Attic</h3>
+                <div class="story-author">
+                    <div class="author-avatar">MH</div>
+                    <span>Mike Horror</span>
+                </div>
+                <p class="story-excerpt">When the new family moves into the old Victorian house, they soon realize they're not alone in their home...</p>
+                <div class="story-stats">
+                    <span><i class="fas fa-eye"></i> 3.7K reads</span>
+                    <span><i class="fas fa-heart"></i> 567 likes</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta">
+    <h2>Ready to Share Your Story?</h2>
+    <p>Join thousands of writers who are already sharing their creativity on InkLink</p>
+    <button class="btn btn-primary btn-large pulse" onclick="window.location.href='blog.html'">
+        Writing Tips
+    </button>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-content">
+        <div class="logo">
+            <i class="fas fa-pen-fancy logo-icon"></i>
+            <h1>InkLink</h1>
+        </div>
+        <div class="footer-links">
+            <a href="#home">Home</a>
+            <a href="#features">Features</a>
+            <a href="stories.html">Stories</a>
+            <a href="Aboutus.html">About</a>
+            <a href="login.html">Login</a>
+            <a href="register.html">Sign Up</a>
+            <a href="tips.html">Writing Tips</a>
+        </div>
+        <div class="copyright">
+            <p>&copy; 2023 InkLink. All rights reserved. Share your stories with the world.</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // Bubbles Background
+    document.addEventListener('DOMContentLoaded', function() {
+        const bubblesContainer = document.getElementById('bubblesContainer');
+        const bubbleCount = 25;
+
+        for (let i = 0; i < bubbleCount; i++) {
+            createBubble();
+        }
+
+        function createBubble() {
+            const bubble = document.createElement('div');
+            bubble.classList.add('bubble');
+
+            const size = Math.random() * 100 + 20;
+            const left = Math.random() * 100;
+            const duration = Math.random() * 20 + 10;
+            const delay = Math.random() * 5;
+            const xMovement = (Math.random() - 0.5) * 100;
+
+            bubble.style.width = `${size}px`;
+            bubble.style.height = `${size}px`;
+            bubble.style.left = `${left}%`;
+            bubble.style.animationDuration = `${duration}s`;
+            bubble.style.animationDelay = `${delay}s`;
+            bubble.style.setProperty('--x-end', `${xMovement}px`);
+
+            bubblesContainer.appendChild(bubble);
+
+            bubble.addEventListener('animationiteration', () => {
+                if (Math.random() > 0.7) {
+                    const newXMovement = (Math.random() - 0.5) * 100;
+                    bubble.style.setProperty('--x-end', `${newXMovement}px`);
+                }
+            });
+        }
+
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Check if user is logged in by calling the backend
+        checkAuthStatus();
+    });
+
+    // Check authentication status with the backend
+    async function checkAuthStatus() {
+        try {
+            const response = await fetch('/api/auth/me', {
+                method: 'GET',
+                credentials: 'include' // Important: include session cookies
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success && result.data) {
+                    // User is authenticated - update UI
+                    updateAuthUI(result.data);
+                } else {
+                    // User is not authenticated - show login buttons
+                    showLoginButtons();
+                }
+            } else {
+                // User is not authenticated
+                showLoginButtons();
+            }
+        } catch (error) {
+            console.error('Auth check failed:', error);
+            showLoginButtons();
+        }
+    }
+
+    // Update UI when user is authenticated
+    function updateAuthUI(userData) {
+        const authButtons = document.getElementById('authButtons');
+        authButtons.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <span>Welcome, ${userData.username || 'User'}!</span>
+                <button class="btn btn-outline" onclick="logout()">Log Out</button>
+                <button class="btn btn-primary" onclick="window.location.href='dashboard.html'">Dashboard</button>
+            </div>
+        `;
+
+        // Optional: Store user info in localStorage for display purposes only
+        localStorage.setItem('currentUser', JSON.stringify(userData));
+    }
+
+    // Show login/register buttons when user is not authenticated
+    function showLoginButtons() {
+        const authButtons = document.getElementById('authButtons');
+        authButtons.innerHTML = `
+            <button class="btn btn-outline" onclick="window.location.href='login.html'">Log In</button>
+            <button class="btn btn-primary" onclick="window.location.href='register.html'">Sign Up</button>
+        `;
+
+        // Clear any stored user data
+        localStorage.removeItem('currentUser');
+    }
+
+    // Logout function
+    async function logout() {
+        try {
+            const response = await fetch('/api/auth/signout', {
+                method: 'POST',
+                credentials: 'include' // Important: include session cookies
+            });
+
+            // Clear frontend state regardless of backend response
+            localStorage.removeItem('currentUser');
+            showLoginButtons();
+
+            if (response.ok) {
+                console.log('Logout successful');
+            }
+
+            // Redirect to home page
+            window.location.href = 'index.html';
+
+        } catch (error) {
+            console.error('Logout error:', error);
+            // Still clear frontend state and redirect
+            localStorage.removeItem('currentUser');
+            showLoginButtons();
+            window.location.href = 'index.html';
+        }
+    }
+</script>
+</body>
+</html>

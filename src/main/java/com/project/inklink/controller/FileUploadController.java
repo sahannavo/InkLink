@@ -1,81 +1,105 @@
 package com.project.inklink.controller;
 
-import com.project.inklink.exception.FileStorageException;
-import com.project.inklink.service.FileStorageService;
+import com.project.inklink.dto.ApiResponse;
+import com.project.inklink.entity.User;
+import com.project.inklink.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-import org.springframework.http.*;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import jakarta.servlet.ServletContext;
-import java.net.MalformedURLException;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.Principal;
-import java.util.Map;
+import java.nio.file.Paths;
+import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/files")
+@RequestMapping("/api/users")
 public class FileUploadController {
 
-    private final FileStorageService storageService;
-    private final ServletContext servletContext;
-
     @Autowired
-    public FileUploadController(FileStorageService storageService, ServletContext servletContext) {
-        this.storageService = storageService;
-        this.servletContext = servletContext;
-    }
+    private UserService userService;
 
-    /**
-     * Uploads an avatar image. Returns JSON with filename and access URL.
-     * Authentication is recommended; here Principal is optional.
-     */
-    @PostMapping(value = "/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> uploadAvatar(@RequestPart("file") MultipartFile file,
-                                          @AuthenticationPrincipal Principal principal) {
-        try {
-            String filename = storageService.storeFile(file);
-            String base = "/api/files/avatar/";
-            String url = base + filename;
-            // Optionally associate filename with the authenticated user here
-            return ResponseEntity.ok(Map.of("fileName", filename, "url", url));
-        } catch (FileStorageException ex) {
-            return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
-        }
-    }
+    // Define upload directory
+    private final String UPLOAD_DIR = "uploads/profiles/";
 
-    /**
-     * Serve avatar by filename. Simple streaming endpoint.
-     */
-    @GetMapping("/avatar/{filename:.+}")
-    public ResponseEntity<Resource> serveAvatar(@PathVariable String filename) {
+    @PostMapping("/upload")
+    public ResponseEntity<ApiResponse> uploadProfilePicture(
+            @RequestParam("file") MultipartFile file,
+            HttpServletRequest request) {
+
         try {
-            Path filePath = storageService.resolveFile(filename);
-            Resource resource = new UrlResource(filePath.toUri());
-            if (!resource.exists() || !resource.isReadable()) {
-                return ResponseEntity.notFound().build();
+            User user = getCurrentUser(request);
+            if (user == null) {
+                return ResponseEntity.status(401)
+                        .body(new ApiResponse(false, "Authentication required"));
             }
 
-            String contentType = servletContext.getMimeType(resource.getFile().getAbsolutePath());
-            if (contentType == null) {
-                contentType = "application/octet-stream";
+            // Validate file
+            if (file.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(new ApiResponse(false, "File is empty"));
             }
 
-            return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(contentType))
-                    .cacheControl(CacheControl.noCache())
-                    .body(resource);
-        } catch (MalformedURLException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        } catch (FileStorageException ex) {
-            return ResponseEntity.notFound().build();
+            // Validate file type
+            String contentType = file.getContentType();
+            if (contentType == null || !contentType.startsWith("image/")) {
+                return ResponseEntity.badRequest()
+                        .body(new ApiResponse(false, "Only image files are allowed"));
+            }
+
+            // Validate file size (2MB max)
+            if (file.getSize() > 2 * 1024 * 1024) {
+                return ResponseEntity.badRequest()
+                        .body(new ApiResponse(false, "File size must be less than 2MB"));
+            }
+
+            // Create upload directory if it doesn't exist
+            Path uploadPath = Paths.get(UPLOAD_DIR);
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+
+            // Generate unique filename
+            String originalFilename = file.getOriginalFilename();
+            String fileExtension = originalFilename != null ?
+                    originalFilename.substring(originalFilename.lastIndexOf(".")) : ".jpg";
+            String filename = UUID.randomUUID().toString() + fileExtension;
+
+            // Save file
+            Path filePath = uploadPath.resolve(filename);
+            Files.copy(file.getInputStream(), filePath);
+
+            // Update user profile picture
+            String previousPicture = user.getProfilePicture();
+            user.setProfilePicture(filename);
+            User updatedUser = userService.updateUser(user);
+
+            // Delete previous profile picture if exists
+            if (previousPicture != null && !previousPicture.isEmpty()) {
+                Path previousFilePath = uploadPath.resolve(previousPicture);
+                if (Files.exists(previousFilePath)) {
+                    Files.delete(previousFilePath);
+                }
+            }
+
+            // Update session
+            request.getSession().setAttribute("user", updatedUser);
+
+            return ResponseEntity.ok(new ApiResponse(true, "Profile picture uploaded successfully", updatedUser));
+
+        } catch (IOException e) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse(false, "Failed to upload file: " + e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse(false, "Upload failed: " + e.getMessage()));
         }
+    }
+
+    private User getCurrentUser(HttpServletRequest request) {
+        return (User) request.getSession().getAttribute("user");
     }
 }
-
-

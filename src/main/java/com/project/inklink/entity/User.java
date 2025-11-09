@@ -1,18 +1,20 @@
 package com.project.inklink.entity;
 
+import com.project.inklink.entity.enums.UserRole;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import org.hibernate.annotations.CreationTimestamp;
-
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "users")
-public class User {
+public class User implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -32,35 +34,48 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String role = "ROLE_USER";
+    private UserRole role = UserRole.USER;
 
-    private String avatarUrl;
+    private String profilePicture;
 
-    @Size(max = 500, message = "Bio must be less than 500 characters")
-    @Column(length = 500)
-    private String bio; // ADDED: Missing bio field
+    // CHANGE THESE TO LAZY FETCHING AND REMOVE CASCADE
+    @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
+    private List<Story> stories = new ArrayList<>();
 
-    @CreationTimestamp
-    @Column(nullable = false, updatable = false)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<Comment> comments = new ArrayList<>();
+
+    @Column(nullable = false)
     private LocalDateTime createdAt;
 
     @Column(nullable = false)
-    private Boolean enabled = true;
-
-    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Story> stories = new ArrayList<>();
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Reaction> reactions = new ArrayList<>();
+    private LocalDateTime updatedAt;
 
     // Constructors
-    public User() {}
+    public User() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
 
     public User(String username, String email, String password) {
+        this();
         this.username = username;
         this.email = email;
         this.password = password;
+    }
+
+    // Lifecycle callbacks
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 
     // Getters and Setters
@@ -76,29 +91,35 @@ public class User {
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
 
-    public String getRole() { return role; }
-    public void setRole(String role) { this.role = role; }
+    public UserRole getRole() { return role; }
+    public void setRole(UserRole role) { this.role = role; }
 
-    public String getAvatarUrl() { return avatarUrl; }
-    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
-
-    // ADDED: Bio getter and setter
-    public String getBio() { return bio; }
-    public void setBio(String bio) { this.bio = bio; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-
-    public Boolean getEnabled() { return enabled; }
-    public void setEnabled(Boolean enabled) { this.enabled = enabled; }
+    public String getProfilePicture() { return profilePicture; }
+    public void setProfilePicture(String profilePicture) { this.profilePicture = profilePicture; }
 
     public List<Story> getStories() { return stories; }
     public void setStories(List<Story> stories) { this.stories = stories; }
 
-    public List<Reaction> getReactions() { return reactions; }
-    public void setReactions(List<Reaction> reactions) { this.reactions = reactions; }
+    public List<Comment> getComments() { return comments; }
+    public void setComments(List<Comment> comments) { this.comments = comments; }
 
-    public boolean isEnabled() {
-        return enabled != null && enabled;
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    // REMOVE the utility methods that modify relationships to avoid serialization issues
+    // or keep them but be aware they might cause LazyInitializationException
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", email='" + email + '\'' +
+                ", role=" + role +
+                ", createdAt=" + createdAt +
+                '}';
     }
 }

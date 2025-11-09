@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Story Title - InkLink</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/story.css">
+</head>
+<body>
+<!-- Navigation -->
+<nav class="navbar" id="navbar">
+    <div class="nav-container">
+        <div class="logo">
+            <a href="index.html">
+                <i class="fas fa-pen-fancy logo-icon"></i>
+                <h1>InkLink</h1>
+            </a>
+        </div>
+        <div class="nav-actions">
+            <button class="btn btn-outline" onclick="window.history.back()">
+                <i class="fas fa-arrow-left"></i>
+                Back
+            </button>
+            <button class="btn btn-outline" onclick="window.location.href='stories.html'">
+                <i class="fas fa-arrow-left"></i>
+                Search stories
+            </button>
+            <div class="auth-buttons" id="authButtons">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Reading Progress -->
+<div class="reading-progress" id="readingProgress">
+    <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<!-- Main Content -->
+<main class="story-main">
+    <!-- Story Header -->
+    <article class="story-article" id="storyArticle">
+        <header class="story-header">
+            <div class="story-meta">
+                <div class="category-badge" id="storyCategory">
+                    Fiction
+                </div>
+                <div class="reading-time" id="readingTime">
+                    <i class="fas fa-clock"></i>
+                    <span>5 min read</span>
+                </div>
+            </div>
+
+            <h1 class="story-title" id="storyTitle">The Last Summit</h1>
+
+            <div class="author-info">
+                <div class="author-avatar" id="authorAvatar">
+                    JS
+                </div>
+                <div class="author-details">
+                    <div class="author-name" id="authorName">John Storyteller</div>
+                    <div class="publish-date" id="publishDate">
+                        Published on <span id="storyDate">January 15, 2024</span>
+                    </div>
+                </div>
+                <button class="btn btn-outline follow-btn" id="followBtn">
+                    <i class="fas fa-plus"></i>
+                    Follow
+                </button>
+            </div>
+
+            <div class="story-stats">
+                <div class="stat">
+                    <i class="fas fa-eye"></i>
+                    <span id="viewCount">2,847</span> views
+                </div>
+                <div class="stat">
+                    <i class="fas fa-heart"></i>
+                    <span id="likeCount">342</span> likes
+                </div>
+                <div class="stat">
+                    <i class="fas fa-comment"></i>
+                    <span id="commentCount">127</span> comments
+                </div>
+            </div>
+
+            <div class="story-tags" id="storyTags">
+                <!-- Dynamically populated -->
+            </div>
+        </header>
+
+        <!-- Story Content -->
+        <div class="story-content" id="storyContent">
+            <div class="content-loading">
+                <div class="loading-spinner"></div>
+                <p>Loading story content...</p>
+            </div>
+        </div>
+
+        <!-- Story Actions -->
+        <footer class="story-actions">
+            <div class="action-buttons">
+                <button class="btn btn-primary like-btn" id="likeBtn">
+                    <i class="fas fa-heart"></i>
+                    <span>Like</span>
+                    <span class="count" id="likeCountBtn">342</span>
+                </button>
+
+                <button class="btn btn-outline comment-btn" id="commentScrollBtn">
+                    <i class="fas fa-comment"></i>
+                    <span>Comment</span>
+                </button>
+
+                <div class="social-share">
+                    <button class="btn btn-icon share-btn" id="shareBtn">
+                        <i class="fas fa-share-alt"></i>
+                    </button>
+                    <div class="share-dropdown" id="shareDropdown">
+                        <button class="share-option" data-platform="twitter">
+                            <i class="fab fa-twitter"></i>
+                            Twitter
+                        </button>
+                        <button class="share-option" data-platform="facebook">
+                            <i class="fab fa-facebook"></i>
+                            Facebook
+                        </button>
+                        <button class="share-option" data-platform="linkedin">
+                            <i class="fab fa-linkedin"></i>
+                            LinkedIn
+                        </button>
+                        <button class="share-option" data-platform="copy">
+                            <i class="fas fa-link"></i>
+                            Copy Link
+                        </button>
+                    </div>
+                </div>
+
+                <button class="btn btn-icon bookmark-btn" id="bookmarkBtn">
+                    <i class="fas fa-bookmark"></i>
+                </button>
+            </div>
+
+            <div class="action-info">
+                <div class="liked-by" id="likedBy">
+                    <div class="avatars">
+                        <div class="avatar">MS</div>
+                        <div class="avatar">SW</div>
+                        <div class="avatar">+15</div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </article>
+
+    <!-- Author Bio -->
+    <section class="author-bio" id="authorBio">
+        <div class="bio-header">
+            <div class="author-avatar-large" id="authorAvatarLarge">
+                JS
+            </div>
+            <div class="bio-content">
+                <h3>About <span id="authorNameBio">John Storyteller</span></h3>
+                <p class="bio-text" id="bioText">
+                    Adventure writer and mountain enthusiast. Exploring the world one story at a time.
+                </p>
+                <div class="author-stats">
+                    <div class="author-stat">
+                        <span class="number" id="authorStories">24</span>
+                        <span class="label">Stories</span>
+                    </div>
+                    <div class="author-stat">
+                        <span class="number" id="authorFollowers">1.2K</span>
+                        <span class="label">Followers</span>
+                    </div>
+                    <div class="author-stat">
+                        <span class="number" id="authorTotalLikes">5.8K</span>
+                        <span class="label">Total Likes</span>
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-primary follow-btn-large" id="followBtnLarge">
+                <i class="fas fa-plus"></i>
+                Follow Author
+            </button>
+        </div>
+    </section>
+
+    <!-- Comments Section -->
+    <section class="comments-section" id="commentsSection">
+        <div class="comments-header">
+            <h2>
+                <i class="fas fa-comments"></i>
+                Comments
+                <span class="comments-count" id="commentsCount">(127)</span>
+            </h2>
+            <div class="sort-comments">
+                <select id="commentsSort" class="sort-select">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="likes">Most Liked</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Add Comment -->
+        <div class="add-comment" id="addComment">
+            <div class="comment-avatar" id="commentUserAvatar">
+                <!-- Dynamically populated -->
+            </div>
+            <div class="comment-form">
+                    <textarea
+                            id="commentText"
+                            placeholder="Share your thoughts..."
+                            rows="3"
+                    ></textarea>
+                <div class="comment-actions">
+                    <button class="btn btn-outline cancel-comment" id="cancelComment">
+                        Cancel
+                    </button>
+                    <button class="btn btn-primary submit-comment" id="submitComment">
+                        Post Comment
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comments List -->
+        <div class="comments-list" id="commentsList">
+            <!-- Dynamically populated -->
+        </div>
+
+        <!-- Load More Comments -->
+        <div class="load-comments">
+            <button class="btn btn-outline" id="loadMoreComments">
+                <i class="fas fa-plus"></i>
+                Load More Comments
+            </button>
+        </div>
+    </section>
+
+    <!-- Related Stories -->
+    <section class="related-stories">
+        <div class="section-header">
+            <h2>More from this author</h2>
+            <a href="#author-stories" class="view-all">View all</a>
+        </div>
+        <div class="stories-grid" id="relatedStories">
+            <!-- Dynamically populated -->
+        </div>
+    </section>
+</main>
+
+<!-- Reading Tools -->
+<div class="reading-tools">
+    <button class="tool-btn" id="fontSizeBtn" title="Font Size">
+        <i class="fas fa-text-height"></i>
+    </button>
+    <button class="tool-btn" id="themeBtn" title="Reading Theme">
+        <i class="fas fa-palette"></i>
+    </button>
+    <button class="tool-btn" id="scrollTopBtn" title="Scroll to Top">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+</div>
+
+<!-- Font Size Modal -->
+<div class="modal-overlay hidden" id="fontSizeModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Reading Settings</h3>
+            <button class="modal-close" id="closeFontModal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="font-size-controls">
+                <label>Font Size</label>
+                <div class="font-size-options">
+                    <button class="font-option" data-size="small">Small</button>
+                    <button class="font-option active" data-size="medium">Medium</button>
+                    <button class="font-option" data-size="large">Large</button>
+                    <button class="font-option" data-size="xlarge">X-Large</button>
+                </div>
+            </div>
+            <div class="theme-controls">
+                <label>Reading Theme</label>
+                <div class="theme-options">
+                    <button class="theme-option active" data-theme="light">
+                        <div class="theme-preview light-theme"></div>
+                        Light
+                    </button>
+                    <button class="theme-option" data-theme="sepia">
+                        <div class="theme-preview sepia-theme"></div>
+                        Sepia
+                    </button>
+                    <button class="theme-option" data-theme="dark">
+                        <div class="theme-preview dark-theme"></div>
+                        Dark
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-content">
+        <div class="footer-section">
+            <div class="logo">
+                <i class="fas fa-pen-fancy logo-icon"></i>
+                <h2>InkLink</h2>
+            </div>
+            <p>Share your stories with the world. Connect with readers and writers everywhere.</p>
+        </div>
+        <div class="footer-section">
+            <h3>Explore</h3>
+            <a href="index.html">Home</a>
+            <a href="stories.html">Stories</a>
+            <a href="#writers">Writers</a>
+            <a href="#categories">Categories</a>
+        </div>
+        <div class="footer-section">
+            <h3>Community</h3>
+            <a href="#guidelines">Guidelines</a>
+            <a href="#blog">Blog</a>
+            <a href="#forum">Forum</a>
+            <a href="#events">Events</a>
+        </div>
+        <div class="footer-section">
+            <h3>Support</h3>
+            <a href="#help">Help Center</a>
+            <a href="#contact">Contact</a>
+            <a href="#privacy">Privacy</a>
+            <a href="#terms">Terms</a>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2023 InkLink. All rights reserved.</p>
+    </div>
+</footer>
+
+<!-- Scripts -->
+<script src="js/api.js"></script>
+<script src="js/story.js"></script>
+</body>
+</html>

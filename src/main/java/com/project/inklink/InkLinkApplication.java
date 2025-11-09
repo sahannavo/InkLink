@@ -5,9 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 public class InkLinkApplication {
-
     public static void main(String[] args) {
-        SpringApplication.run(InkLinkApplication.class,args);
-}
-
+        SpringApplication.run(InkLinkApplication.class, args);
+    }
 }

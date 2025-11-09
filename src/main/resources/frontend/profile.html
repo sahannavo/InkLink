@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile - InkLink</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/profile.css">
+</head>
+<body>
+<!-- Navigation -->
+<nav class="navbar" id="navbar">
+    <div class="nav-container">
+        <div class="logo">
+            <a href="index.html">
+                <i class="fas fa-pen-fancy logo-icon"></i>
+                <h1>InkLink</h1>
+            </a>
+        </div>
+        <div class="nav-actions">
+            <a href="create-story.html" class="btn btn-primary">
+                <i class="fas fa-plus"></i>
+                New Story
+            </a>
+            <div class="auth-buttons" id="authButtons">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="profile-main">
+    <!-- Profile Header -->
+    <section class="profile-header">
+        <div class="profile-background">
+            <div class="background-image" id="backgroundImage">
+                <!-- Background image or gradient -->
+            </div>
+            <button class="edit-background-btn" id="editBackgroundBtn">
+                <i class="fas fa-camera"></i>
+                Change Cover
+            </button>
+        </div>
+
+        <div class="profile-info">
+            <div class="profile-avatar-section">
+                <div class="avatar-container">
+                    <div class="profile-avatar" id="profileAvatar">
+                        <!-- Dynamically populated -->
+                    </div>
+                    <button class="edit-avatar-btn" id="editAvatarBtn">
+                        <i class="fas fa-camera"></i>
+                    </button>
+                </div>
+                <div class="profile-actions">
+                    <button class="btn btn-primary" id="followBtn">
+                        <i class="fas fa-plus"></i>
+                        Follow
+                    </button>
+                    <button class="btn btn-outline" id="messageBtn">
+                        <i class="fas fa-envelope"></i>
+                        Message
+                    </button>
+                    <button class="btn btn-icon" id="moreActionsBtn">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </button>
+                    <div class="dropdown-menu" id="moreActionsMenu">
+                        <button class="dropdown-item" id="shareProfileBtn">
+                            <i class="fas fa-share-alt"></i>
+                            Share Profile
+                        </button>
+                        <button class="dropdown-item" id="reportUserBtn">
+                            <i class="fas fa-flag"></i>
+                            Report User
+                        </button>
+                        <div class="dropdown-divider" id="adminActions"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-details">
+                <h1 class="profile-name" id="profileName">Loading...</h1>
+                <p class="profile-username" id="profileUsername">@username</p>
+                <p class="profile-bio" id="profileBio">
+                    This user hasn't written a bio yet.
+                </p>
+
+                <div class="profile-meta">
+                    <div class="meta-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span id="profileLocation">Not specified</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-link"></i>
+                        <a href="#" id="profileWebsite" class="website-link">No website</a>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-calendar-alt"></i>
+                        Joined <span id="joinDate">Loading...</span>
+                    </div>
+                </div>
+
+                <div class="profile-stats">
+                    <div class="stat">
+                        <span class="stat-number" id="storiesCount">0</span>
+                        <span class="stat-label">Stories</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number" id="followersCount">0</span>
+                        <span class="stat-label">Followers</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number" id="followingCount">0</span>
+                        <span class="stat-label">Following</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number" id="totalLikes">0</span>
+                        <span class="stat-label">Likes</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Profile Navigation -->
+    <nav class="profile-nav">
+        <div class="nav-container">
+            <a href="#stories" class="nav-item active" data-tab="stories">
+                <i class="fas fa-book"></i>
+                Stories
+                <span class="nav-count" id="storiesNavCount">0</span>
+            </a>
+            <a href="#about" class="nav-item" data-tab="about">
+                <i class="fas fa-user"></i>
+                About
+            </a>
+            <a href="#activity" class="nav-item" data-tab="activity">
+                <i class="fas fa-chart-line"></i>
+                Activity
+            </a>
+            <a href="#collections" class="nav-item" data-tab="collections">
+                <i class="fas fa-folder"></i>
+                Collections
+                <span class="nav-count" id="collectionsNavCount">0</span>
+            </a>
+            <a href="#followers" class="nav-item" data-tab="followers">
+                <i class="fas fa-users"></i>
+                Followers
+            </a>
+        </div>
+    </nav>
+
+    <!-- Profile Content -->
+    <div class="profile-content">
+        <!-- Stories Tab -->
+        <div class="tab-content active" id="stories-tab">
+            <div class="stories-header">
+                <h2>Published Stories</h2>
+                <div class="sort-options">
+                    <select id="storiesSort" class="sort-select">
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="popular">Most Popular</option>
+                        <option value="title">Title A-Z</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="stories-grid" id="storiesGrid">
+                <!-- Dynamically populated -->
+            </div>
+
+            <div class="load-more-container">
+                <button class="btn btn-outline" id="loadMoreStories">
+                    <i class="fas fa-plus"></i>
+                    Load More Stories
+                </button>
+            </div>
+        </div>
+
+        <!-- About Tab -->
+        <div class="tab-content" id="about-tab">
+            <div class="about-grid">
+                <div class="about-card">
+                    <h3>About Me</h3>
+                    <div class="about-content" id="aboutContent">
+                        <p>This user hasn't shared any information about themselves yet.</p>
+                    </div>
+
+                    <div class="about-details">
+                        <div class="detail-item">
+                            <label><i class="fas fa-briefcase"></i> Occupation</label>
+                            <span id="occupation">Not specified</span>
+                        </div>
+                        <div class="detail-item">
+                            <label><i class="fas fa-graduation-cap"></i> Education</label>
+                            <span id="education">Not specified</span>
+                        </div>
+                        <div class="detail-item">
+                            <label><i class="fas fa-heart"></i> Interests</label>
+                            <div class="interests-list" id="interestsList">
+                                <!-- Dynamically populated -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-card">
+                    <h3>Writing Statistics</h3>
+                    <div class="writing-stats">
+                        <div class="writing-stat">
+                            <div class="stat-icon">
+                                <i class="fas fa-pencil-alt"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="totalWords">0</span>
+                                <span class="stat-label">Total Words</span>
+                            </div>
+                        </div>
+                        <div class="writing-stat">
+                            <div class="stat-icon">
+                                <i class="fas fa-eye"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="totalReads">0</span>
+                                <span class="stat-label">Total Reads</span>
+                            </div>
+                        </div>
+                        <div class="writing-stat">
+                            <div class="stat-icon">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="avgRating">0.0</span>
+                                <span class="stat-label">Avg Rating</span>
+                            </div>
+                        </div>
+                        <div class="writing-stat">
+                            <div class="stat-icon">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="achievements">0</span>
+                                <span class="stat-label">Achievements</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="genre-stats">
+                        <h4>Top Genres</h4>
+                        <div class="genre-list" id="genreList">
+                            <!-- Dynamically populated -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="badges-card">
+                    <h3>Badges & Achievements</h3>
+                    <div class="badges-grid" id="badgesGrid">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Tab -->
+        <div class="tab-content" id="activity-tab">
+            <div class="activity-header">
+                <h2>Recent Activity</h2>
+                <div class="activity-filters">
+                    <select id="activityFilter" class="filter-select">
+                        <option value="all">All Activity</option>
+                        <option value="stories">Stories</option>
+                        <option value="comments">Comments</option>
+                        <option value="likes">Likes</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="activity-timeline" id="activityTimeline">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+
+        <!-- Collections Tab -->
+        <div class="tab-content" id="collections-tab">
+            <div class="collections-header">
+                <h2>Story Collections</h2>
+                <button class="btn btn-primary" id="createCollectionBtn">
+                    <i class="fas fa-plus"></i>
+                    New Collection
+                </button>
+            </div>
+
+            <div class="collections-grid" id="collectionsGrid">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+
+        <!-- Followers Tab -->
+        <div class="tab-content" id="followers-tab">
+            <div class="followers-header">
+                <h2>Followers</h2>
+                <div class="follower-stats">
+                    <div class="follower-stat active" data-type="followers">
+                        <span class="count" id="followersTabCount">0</span>
+                        <span class="label">Followers</span>
+                    </div>
+                    <div class="follower-stat" data-type="following">
+                        <span class="count" id="followingTabCount">0</span>
+                        <span class="label">Following</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="followers-container">
+                <div class="followers-list" id="followersList">
+                    <!-- Dynamically populated -->
+                </div>
+                <div class="following-list hidden" id="followingList">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Edit Profile Modal -->
+<div class="modal-overlay hidden" id="editProfileModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Edit Profile</h3>
+            <button class="modal-close" id="closeEditModal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form class="edit-profile-form" id="editProfileForm">
+                <div class="form-section">
+                    <h4>Basic Information</h4>
+                    <div class="form-group">
+                        <label for="editDisplayName">Display Name</label>
+                        <input type="text" id="editDisplayName" class="form-control" maxlength="50">
+                    </div>
+                    <div class="form-group">
+                        <label for="editUsername">Username</label>
+                        <input type="text" id="editUsername" class="form-control" maxlength="30">
+                    </div>
+                    <div class="form-group">
+                        <label for="editBio">Bio</label>
+                        <textarea id="editBio" class="form-control" rows="4" maxlength="500"
+                                  placeholder="Tell readers about yourself..."></textarea>
+                        <div class="char-counter">
+                            <span id="bioCharCount">0</span>/500
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h4>Personal Details</h4>
+                    <div class="form-group">
+                        <label for="editLocation">Location</label>
+                        <input type="text" id="editLocation" class="form-control" placeholder="City, Country">
+                    </div>
+                    <div class="form-group">
+                        <label for="editWebsite">Website</label>
+                        <input type="url" id="editWebsite" class="form-control" placeholder="https://...">
+                    </div>
+                    <div class="form-group">
+                        <label for="editOccupation">Occupation</label>
+                        <input type="text" id="editOccupation" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="editEducation">Education</label>
+                        <input type="text" id="editEducation" class="form-control">
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h4>Interests</h4>
+                    <div class="form-group">
+                        <label>Add Interests</label>
+                        <div class="interests-input">
+                            <input type="text" id="editInterests" class="form-control"
+                                   placeholder="Type an interest and press Enter...">
+                            <div class="selected-interests" id="selectedInterests">
+                                <!-- Dynamically populated -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" id="cancelEdit">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Avatar Upload Modal -->
+<div class="modal-overlay hidden" id="avatarModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Update Profile Picture</h3>
+            <button class="modal-close" id="closeAvatarModal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="avatar-upload-options">
+                <div class="upload-option" data-method="upload">
+                    <i class="fas fa-upload"></i>
+                    <span>Upload Photo</span>
+                </div>
+                <div class="upload-option" data-method="gravatar">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Use Gravatar</span>
+                </div>
+                <div class="upload-option" data-method="remove">
+                    <i class="fas fa-trash"></i>
+                    <span>Remove Photo</span>
+                </div>
+            </div>
+
+            <div class="avatar-preview-container hidden" id="avatarPreviewContainer">
+                <div class="avatar-preview">
+                    <img id="avatarPreview" src="" alt="Preview">
+                </div>
+                <div class="avatar-actions">
+                    <button class="btn btn-outline" id="cropAvatar">Crop</button>
+                    <button class="btn btn-primary" id="saveAvatar">Save Avatar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-content">
+        <div class="footer-section">
+            <div class="logo">
+                <i class="fas fa-pen-fancy logo-icon"></i>
+                <h2>InkLink</h2>
+            </div>
+            <p>Share your stories with the world. Connect with readers and writers everywhere.</p>
+        </div>
+        <div class="footer-section">
+            <h3>Explore</h3>
+            <a href="index.html">Home</a>
+            <a href="stories.html">Stories</a>
+            <a href="#writers">Writers</a>
+            <a href="#categories">Categories</a>
+        </div>
+        <div class="footer-section">
+            <h3>Community</h3>
+            <a href="#guidelines">Guidelines</a>
+            <a href="#blog">Blog</a>
+            <a href="#forum">Forum</a>
+            <a href="#events">Events</a>
+        </div>
+        <div class="footer-section">
+            <h3>Support</h3>
+            <a href="#help">Help Center</a>
+            <a href="#contact">Contact</a>
+            <a href="#privacy">Privacy</a>
+            <a href="#terms">Terms</a>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2023 InkLink. All rights reserved.</p>
+    </div>
+</footer>
+
+<!-- Scripts -->
+<script src="js/api.js"></script>
+<script src="js/profile.js"></script>
+</body>
+</html>

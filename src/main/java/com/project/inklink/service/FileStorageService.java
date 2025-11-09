@@ -1,71 +1,143 @@
 package com.project.inklink.service;
 
-
-import com.project.inklink.config.FileStorageProperties;
-import com.project.inklink.exception.FileStorageException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.*;
-import java.util.Locale;
-import java.util.Set;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
 @Service
 public class FileStorageService {
 
-    private final Path uploadRoot;
-    private static final long MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
-    private static final Set<String> ALLOWED_EXT = Set.of("jpg", "jpeg", "png", "gif", "webp");
+    // Define upload directories
+    private final String PROFILE_UPLOAD_DIR = "uploads/profiles/";
+    private final String STORY_UPLOAD_DIR = "uploads/stories/";
 
-    @Autowired
-    public FileStorageService(FileStorageProperties props) {
-        this.uploadRoot = Paths.get(props.getUploadDir()).toAbsolutePath().normalize();
-        try {
-            Files.createDirectories(this.uploadRoot);
-        } catch (IOException ex) {
-            throw new FileStorageException("Could not create upload directory", ex);
+    // Allowed file types
+    private final String[] ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"};
+    private final long MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+
+    public String storeProfilePicture(MultipartFile file) throws IOException {
+        return storeFile(file, PROFILE_UPLOAD_DIR, true);
+    }
+
+    public String storeStoryImage(MultipartFile file) throws IOException {
+        return storeFile(file, STORY_UPLOAD_DIR, true);
+    }
+
+    public String storeFile(MultipartFile file, String uploadDir, boolean isImage) throws IOException {
+        // Validate file
+        validateFile(file, isImage);
+
+        // Create upload directory if it doesn't exist
+        Path uploadPath = Paths.get(uploadDir);
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+
+        // Generate unique filename
+        String originalFilename = file.getOriginalFilename();
+        String fileExtension = getFileExtension(originalFilename);
+        String filename = UUID.randomUUID().toString() + fileExtension;
+
+        // Save file
+        Path filePath = uploadPath.resolve(filename);
+        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+        return filename;
+    }
+
+    public void deleteFile(String filename, String uploadDir) throws IOException {
+        if (filename != null && !filename.isEmpty()) {
+            Path filePath = Paths.get(uploadDir).resolve(filename);
+            if (Files.exists(filePath)) {
+                Files.delete(filePath);
+            }
         }
     }
 
-    public String storeFile(MultipartFile file) {
-        if (file == null || file.isEmpty()) {
-            throw new FileStorageException("File is empty");
+    public void deleteProfilePicture(String filename) throws IOException {
+        deleteFile(filename, PROFILE_UPLOAD_DIR);
+    }
+
+    public void deleteStoryImage(String filename) throws IOException {
+        deleteFile(filename, STORY_UPLOAD_DIR);
+    }
+
+    // Validation methods
+    private void validateFile(MultipartFile file, boolean isImage) {
+        if (file.isEmpty()) {
+            throw new RuntimeException("File is empty");
         }
 
         if (file.getSize() > MAX_FILE_SIZE) {
-            throw new FileStorageException("File size exceeds 2MB limit");
+            throw new RuntimeException("File size must be less than 2MB");
         }
 
-        String original = StringUtils.cleanPath(file.getOriginalFilename());
-        int idx = original.lastIndexOf('.');
-        if (idx <= 0) {
-            throw new FileStorageException("File must have an extension");
-        }
-        String ext = original.substring(idx + 1).toLowerCase(Locale.ROOT);
-        if (!ALLOWED_EXT.contains(ext)) {
-            throw new FileStorageException("Invalid file type. Allowed: " + ALLOWED_EXT);
-        }
-
-        String filename = UUID.randomUUID().toString() + "." + ext;
-        Path target = this.uploadRoot.resolve(filename);
-
-        try {
-            Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
-            return filename;
-        } catch (IOException e) {
-            throw new FileStorageException("Failed to store file", e);
+        if (isImage) {
+            validateImageFile(file);
         }
     }
 
-    public Path resolveFile(String filename) {
-        Path file = uploadRoot.resolve(filename).normalize();
-        if (!Files.exists(file) || !file.startsWith(uploadRoot)) {
-            throw new FileStorageException("File not found: " + filename);
+    private void validateImageFile(MultipartFile file) {
+        String contentType = file.getContentType();
+        if (contentType == null || !isAllowedImageType(contentType)) {
+            throw new RuntimeException("Only image files are allowed (JPEG, PNG, GIF, WebP)");
         }
-        return file;
+    }
+
+    private boolean isAllowedImageType(String contentType) {
+        for (String allowedType : ALLOWED_IMAGE_TYPES) {
+            if (allowedType.equals(contentType)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String getFileExtension(String filename) {
+        if (filename == null || filename.lastIndexOf(".") == -1) {
+            return ".jpg"; // Default extension
+        }
+        return filename.substring(filename.lastIndexOf("."));
+    }
+
+    // Utility methods
+    public byte[] getFileBytes(String filename, String uploadDir) throws IOException {
+        Path filePath = Paths.get(uploadDir).resolve(filename);
+        if (Files.exists(filePath)) {
+            return Files.readAllBytes(filePath);
+        }
+        throw new RuntimeException("File not found: " + filename);
+    }
+
+    public byte[] getProfilePictureBytes(String filename) throws IOException {
+        return getFileBytes(filename, PROFILE_UPLOAD_DIR);
+    }
+
+    public boolean fileExists(String filename, String uploadDir) {
+        if (filename == null || filename.isEmpty()) {
+            return false;
+        }
+        Path filePath = Paths.get(uploadDir).resolve(filename);
+        return Files.exists(filePath);
+    }
+
+    public String getProfilePictureUrl(String filename) {
+        if (filename == null || filename.isEmpty()) {
+            return null;
+        }
+        return "/api/files/profiles/" + filename;
+    }
+
+    public String getStoryImageUrl(String filename) {
+        if (filename == null || filename.isEmpty()) {
+            return null;
+        }
+        return "/api/files/stories/" + filename;
     }
 }
