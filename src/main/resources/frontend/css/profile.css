@@ -18,6 +18,40 @@
     --info: #17a2b8;
 }
 
+/* Animations */
+@keyframes slideIn {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -278,6 +312,78 @@ body {
     height: 1px;
     background: var(--gray-300);
     margin: 0.5rem 0;
+}
+
+/* User Menu Dropdown */
+.user-menu {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+}
+
+.user-info:hover {
+    background: var(--gray-100);
+}
+
+.username {
+    color: var(--gray-800);
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.user-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--light);
+    border: 1px solid var(--gray-300);
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    padding: 0.5rem;
+    min-width: 180px;
+    z-index: 1001;
+    display: none;
+    margin-top: 0.5rem;
+}
+
+.user-menu:hover .user-dropdown {
+    display: block;
+}
+
+.user-dropdown .dropdown-item {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 4px;
+    color: var(--gray-700);
+    transition: background-color 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.user-dropdown .dropdown-item:hover {
+    background: var(--gray-100);
+}
+
+.user-dropdown .logout-btn {
+    color: var(--danger);
+}
+
+.user-dropdown .logout-btn:hover {
+    background: rgba(220, 53, 69, 0.1);
 }
 
 .profile-details {

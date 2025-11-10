@@ -25,12 +25,26 @@ class ProfilePage {
     }
 
     async checkAuthentication() {
-        const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
-        const userData = localStorage.getItem('user');
+        try {
+            const response = await fetch('/api/auth/me', {
+                method: 'GET',
+                credentials: 'include'
+            });
 
-        if (isAuthenticated && userData) {
-            this.currentUser = JSON.parse(userData);
-            this.updateAuthUI();
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success && result.data) {
+                    this.currentUser = result.data;
+                    this.updateAuthUI();
+                } else {
+                    window.location.href = 'login.html';
+                }
+            } else {
+                window.location.href = 'login.html';
+            }
+        } catch (error) {
+            console.error('Auth check failed:', error);
+            window.location.href = 'login.html';
         }
     }
 
@@ -41,8 +55,12 @@ class ProfilePage {
             authButtons.innerHTML = `
                 <div class="user-menu">
                     <div class="user-info">
-                        <div class="user-avatar">${this.currentUser.username?.charAt(0)?.toUpperCase() || 'U'}</div>
                         <span class="username">${this.currentUser.username}</span>
+                    </div>
+                    <div class="user-dropdown">
+                        <button class="dropdown-item" onclick="window.location.href='profile.html?id=${this.currentUser.id}'">View Profile</button>
+                        <button class="dropdown-item" onclick="window.location.href='dashboard.html'">Dashboard</button>
+                        <button class="dropdown-item logout-btn" onclick="profilePage.logout()">Logout</button>
                     </div>
                 </div>
             `;
@@ -54,12 +72,30 @@ class ProfilePage {
             this.showLoadingState();
 
             // Determine if we're viewing own profile or another user's
-            if (this.userId === 'current' || this.userId === this.currentUser?.id) {
+            const userId = parseInt(this.userId);
+            const currentUserId = this.currentUser?.id;
+
+            if (this.userId === 'current' || userId === currentUserId) {
                 this.profileUser = this.currentUser;
                 this.isOwnProfile = true;
             } else {
-                this.profileUser = await api.users.getProfile(this.userId);
-                this.isOwnProfile = false;
+                // Fetch other user's profile from API
+                const response = await fetch(`/api/users/${userId}`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success && result.data) {
+                        this.profileUser = result.data;
+                        this.isOwnProfile = false;
+                    } else {
+                        throw new Error('User not found');
+                    }
+                } else {
+                    throw new Error('Failed to load user profile');
+                }
             }
 
             if (!this.profileUser) {
@@ -360,12 +396,34 @@ class ProfilePage {
 
     async loadStories() {
         try {
-            this.stories = await api.stories.getByUser(this.profileUser.id);
+            const response = await fetch(`/api/stories/user/${this.profileUser.id}`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                // Handle different response formats
+                if (result.success && result.data) {
+                    this.stories = Array.isArray(result.data) ? result.data : result.data.content || [];
+                } else if (Array.isArray(result)) {
+                    this.stories = result;
+                } else if (result.content && Array.isArray(result.content)) {
+                    this.stories = result.content;
+                } else {
+                    this.stories = [];
+                }
+            } else {
+                this.stories = [];
+            }
+            
             this.displayStories();
             this.updateStoriesCount();
 
         } catch (error) {
             console.error('Error loading stories:', error);
+            this.stories = [];
+            this.displayStories();
         }
     }
 
@@ -428,11 +486,21 @@ class ProfilePage {
 
     async loadProfileStats() {
         try {
-            const stats = await api.users.getStats(this.profileUser.id);
-            this.updateProfileStats(stats);
+            const response = await fetch(`/api/users/${this.profileUser.id}/stats`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                const stats = result.success && result.data ? result.data : result;
+                this.updateProfileStats(stats);
+            }
 
         } catch (error) {
             console.error('Error loading profile stats:', error);
+            // Use default stats
+            this.updateProfileStats({});
         }
     }
 
@@ -668,5 +736,148 @@ class ProfilePage {
         // Implement pagination for stories
         this.showNotification('Loading more stories...', 'info');
     }
+
+    async logout() {
+        try {
+            await fetch('/api/auth/signout', {
+                method: 'POST',
+                credentials: 'include'
+            });
+        } catch (error) {
+            console.error('Logout error:', error);
+        } finally {
+            window.location.href = 'index.html';
+        }
+    }
+
+    // UI State Management Methods
+    showLoadingState() {
+        const profileName = document.getElementById('profileName');
+        if (profileName) {
+            profileName.textContent = 'Loading...';
+        }
+    }
+
+    hideLoadingState() {
+        // Loading state is replaced by actual content in updateProfileUI
+    }
+
+    showErrorState(message) {
+        const profileHeader = document.querySelector('.profile-header');
+        if (profileHeader) {
+            profileHeader.innerHTML = `
+                <div style="padding: 3rem; text-align: center;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #dc3545; margin-bottom: 1rem;"></i>
+                    <h3>${message}</h3>
+                    <a href="index.html" class="btn btn-primary" style="margin-top: 1rem;">Go Home</a>
+                </div>
+            `;
+        }
+    }
+
+    showNotification(message, type = 'info') {
+        // Create a simple notification
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : type === 'warning' ? '#ffc107' : '#17a2b8'};
+            color: ${type === 'warning' ? '#000' : '#fff'};
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+        `;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+
+    // Helper Methods
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    formatNumber(num) {
+        if (num >= 1000000) {
+            return (num / 1000000).toFixed(1) + 'M';
+        } else if (num >= 1000) {
+            return (num / 1000).toFixed(1) + 'K';
+        }
+        return num.toString();
+    }
+
+    getStoryIcon(category) {
+        const icons = {
+            'ADVENTURE': 'mountain',
+            'MYSTERY': 'search',
+            'ROMANCE': 'heart',
+            'HORROR': 'ghost',
+            'FANTASY': 'wand-magic-sparkles',
+            'SCIENCE_FICTION': 'rocket',
+            'THRILLER': 'bolt'
+        };
+        return icons[category] || 'book';
+    }
+
+    // Placeholder methods for features to be implemented
+    loadAboutData() {
+        // Load about tab data
+    }
+
+    loadActivityData() {
+        // Load activity tab data
+    }
+
+    loadCollectionsData() {
+        // Load collections tab data
+    }
+
+    loadFollowersData() {
+        // Load followers tab data
+    }
+
+    reportUser() {
+        this.showNotification('User report submitted', 'success');
+    }
+
+    createCollection() {
+        this.showNotification('Collection feature coming soon!', 'info');
+    }
+
+    switchFollowerView(type) {
+        const followersList = document.getElementById('followersList');
+        const followingList = document.getElementById('followingList');
+        
+        if (type === 'followers') {
+            followersList.classList.remove('hidden');
+            followingList.classList.add('hidden');
+        } else {
+            followersList.classList.add('hidden');
+            followingList.classList.remove('hidden');
+        }
+    }
+
+    updateCharCounter(elementId, length, max) {
+        document.getElementById(elementId).textContent = length;
+    }
+
+    filterActivity(filterBy) {
+        // Filter activity based on type
+    }
 }
-// Tab
+
+// Initialize the profile page when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Initializing profile page...');
+    window.profilePage = new ProfilePage();
+});

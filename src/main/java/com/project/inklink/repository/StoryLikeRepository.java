@@ -20,6 +20,9 @@ public interface StoryLikeRepository extends JpaRepository<StoryLike, Long> {
     // Delete like by story and user
     void deleteByStoryIdAndUserId(Long storyId, Long userId);
 
+    // Delete all likes for a story
+    void deleteByStoryId(Long storyId);
+
     // Check if like exists
     Boolean existsByStoryIdAndUserId(Long storyId, Long userId);
 }

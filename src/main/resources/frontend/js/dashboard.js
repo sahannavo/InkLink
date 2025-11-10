@@ -52,8 +52,11 @@ class Dashboard {
             authButtons.innerHTML = `
                 <div class="user-menu">
                     <div class="user-info">
-                        <div class="user-avatar">${this.currentUser.username?.charAt(0)?.toUpperCase() || 'U'}</div>
                         <span class="username">${this.currentUser.username}</span>
+                    </div>
+                    <div class="user-dropdown">
+                        <button class="dropdown-item" onclick="window.location.href='profile.html?id=${this.currentUser.id}'">View Profile</button>
+                        <button class="dropdown-item logout-btn" onclick="dashboard.logout()">Logout</button>
                     </div>
                 </div>
             `;

@@ -153,7 +153,7 @@
 <section class="cta">
     <h2>Ready to Share Your Story?</h2>
     <p>Join thousands of writers who are already sharing their creativity on InkLink</p>
-    <button class="btn btn-primary btn-large" onclick="window.location.href='login.html'">
+    <button class="btn btn-primary btn-large" onclick="window.location.href='tips.html'">
         Writing Tips
     </button>
 </section>
@@ -231,19 +231,21 @@
             }
         });
 
-        // Smooth scrolling for anchor links
+        // Smooth scrolling for anchor links only
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
-                e.preventDefault();
                 const targetId = this.getAttribute('href');
-                if (targetId === '#') return;
+                if (targetId === '#' || targetId === '#home' || targetId === '#features') {
+                    e.preventDefault();
+                    if (targetId === '#') return;
 
-                const targetElement = document.querySelector(targetId);
-                if (targetElement) {
-                    window.scrollTo({
-                        top: targetElement.offsetTop - 80,
-                        behavior: 'smooth'
-                    });
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
                 }
             });
         });

@@ -68,11 +68,11 @@ class StoryPage {
             authButtons.innerHTML = `
             <div class="user-menu">
                 <div class="user-info">
-                    
                     <span class="username">${this.currentUser.username}</span>
                 </div>
                 <div class="user-dropdown">
-                    
+                    <button class="dropdown-item" onclick="window.location.href='profile.html?id=${this.currentUser.id}'">View Profile</button>
+                    <button class="dropdown-item" onclick="window.location.href='dashboard.html'">Dashboard</button>
                     <button class="dropdown-item logout-btn" onclick="storyPage.logout()">Logout</button>
                 </div>
             </div>

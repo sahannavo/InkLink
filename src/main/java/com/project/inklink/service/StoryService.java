@@ -62,6 +62,10 @@ public class StoryService {
 
     // Delete story
     public void deleteStory(Long id) {
+        // First, delete all likes for this story
+        storyLikeRepository.deleteByStoryId(id);
+        
+        // Then delete the story itself
         storyRepository.deleteById(id);
     }
 

@@ -62,7 +62,6 @@ class StoryCreator {
             authButtons.innerHTML = `
                 <div class="user-menu">
                     <div class="user-info">
-                        <div class="user-avatar">${this.currentUser.username?.charAt(0)?.toUpperCase() || 'U'}</div>
                         <span class="username">${this.currentUser.username}</span>
                     </div>
                 </div>
