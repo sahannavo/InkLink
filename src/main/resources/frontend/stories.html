@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discover Stories - InkLink</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/stories.css">
+</head>
+<body>
+<!-- Navigation -->
+<nav class="navbar" id="navbar">
+    <div class="nav-container">
+        <div class="logo">
+            <a href="index.html">
+                <i class="fas fa-pen-fancy logo-icon"></i>
+                <h1>InkLink</h1>
+            </a>
+        </div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="stories.html" class="active">Stories</a>
+            <a href="Aboutus.html">About</a>
+            <a onclick="window.history.back()">go back</a>
+        </div>
+        <div class="nav-actions">
+            <div class="search-container">
+                <input type="text" id="globalSearch" placeholder="Search stories..." class="search-input">
+                <button class="search-btn">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="stories-main">
+    <!-- Hero Section -->
+    <section class="stories-hero">
+        <div class="hero-content">
+            <h1>Discover Amazing Stories</h1>
+            <p>Explore thousands of stories from talented writers around the world</p>
+            <div class="hero-stats">
+                <div class="stat">
+                    <span class="stat-number" id="totalStories">12,847</span>
+                    <span class="stat-label">Stories</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number" id="totalWriters">3,452</span>
+                    <span class="stat-label">Writers</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number" id="totalLikes">284,956</span>
+                    <span class="stat-label">Likes</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Filters & Controls -->
+    <section class="filters-section">
+        <div class="filters-container">
+            <!-- Search Bar -->
+            <div class="search-filter">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="storySearch" placeholder="Search by title, author, or content...">
+                    <button class="clear-search" id="clearSearch">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filter Controls -->
+            <div class="filter-controls">
+                <div class="filter-group">
+                    <label for="categoryFilter">Category</label>
+                    <select id="categoryFilter" class="filter-select">
+                        <option value="">All Categories</option>
+                        <option value="FICTION">Fiction</option>
+                        <option value="NON_FICTION">Non-Fiction</option>
+                        <option value="POETRY">Poetry</option>
+                        <option value="FANTASY">Fantasy</option>
+                        <option value="SCI_FI">Science Fiction</option>
+                        <option value="MYSTERY">Mystery</option>
+                        <option value="ROMANCE">Romance</option>
+                        <option value="HORROR">Horror</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="sortBy">Sort By</label>
+                    <select id="sortBy" class="filter-select">
+                        <option value="createdAt,desc">Newest First</option>
+                        <option value="createdAt,asc">Oldest First</option>
+                        <option value="viewCount,desc">Most Popular</option>
+                        <option value="likeCount,desc">Most Liked</option>
+                        <option value="title,asc">Title A-Z</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="timeFilter">Time Period</label>
+                    <select id="timeFilter" class="filter-select">
+                        <option value="">All Time</option>
+                        <option value="day">Last 24 Hours</option>
+                        <option value="week">Last Week</option>
+                        <option value="month">Last Month</option>
+                        <option value="year">Last Year</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-outline" id="resetFilters">
+                    <i class="fas fa-redo"></i>
+                    Reset
+                </button>
+
+                <button class="btn btn-primary" id="createStoryBtn">
+                    <i class="fas fa-plus"></i>
+                    Write Story
+                </button>
+            </div>
+
+            <!-- Active Filters -->
+            <div class="active-filters" id="activeFilters">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Tags Cloud -->
+    <section class="tags-section">
+        <div class="tags-container">
+            <h3>Popular Tags</h3>
+            <div class="tags-cloud" id="tagsCloud">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Stories Grid -->
+    <section class="stories-section">
+        <div class="stories-container">
+            <div class="stories-header">
+                <h2 id="storiesTitle">Featured Stories</h2>
+                <div class="view-controls">
+                    <button class="view-btn active" data-view="grid">
+                        <i class="fas fa-th"></i>
+                    </button>
+                    <button class="view-btn" data-view="list">
+                        <i class="fas fa-list"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div class="loading-state" id="loadingState">
+                <div class="loading-spinner"></div>
+                <p>Loading stories...</p>
+            </div>
+
+            <!-- Stories Grid -->
+            <div class="stories-grid" id="storiesGrid">
+                <!-- Dynamically populated -->
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state hidden" id="emptyState">
+                <i class="fas fa-book-open"></i>
+                <h3>No stories found</h3>
+                <p>Try adjusting your search or filters</p>
+                <button class="btn btn-primary" id="resetEmptyState">Clear Filters</button>
+            </div>
+
+            <!-- Load More -->
+            <div class="load-more-container">
+                <button class="btn btn-outline" id="loadMoreBtn">
+                    <i class="fas fa-plus"></i>
+                    Load More Stories
+                </button>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-content">
+        <div class="footer-section">
+            <div class="logo">
+                <i class="fas fa-pen-fancy logo-icon"></i>
+                <h2>InkLink</h2>
+            </div>
+            <p>Share your stories with the world. Connect with readers and writers everywhere.</p>
+        </div>
+        <div class="footer-section">
+            <h3>Explore</h3>
+            <a href="index.html">Home</a>
+            <a href="stories.html">Stories</a>
+            <a href="#writers">Writers</a>
+            <a href="#categories">Categories</a>
+        </div>
+        <div class="footer-section">
+            <h3>Community</h3>
+            <a href="#guidelines">Guidelines</a>
+            <a href="#blog">Blog</a>
+            <a href="#forum">Forum</a>
+            <a href="#events">Events</a>
+        </div>
+        <div class="footer-section">
+            <h3>Support</h3>
+            <a href="#help">Help Center</a>
+            <a href="#contact">Contact</a>
+            <a href="#privacy">Privacy</a>
+            <a href="#terms">Terms</a>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2023 InkLink. All rights reserved.</p>
+    </div>
+</footer>
+
+<!-- Scripts -->
+<script src="js/api.js"></script>
+<script src="js/stories.js"></script>
+</body>
+</html>

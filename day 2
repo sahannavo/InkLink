@@ -1,0 +1,25 @@
+## Day 2 Features Implemented ✅
+
+### File Upload System
+- Avatar upload functionality with validation
+- 2MB file size limit
+- Supported formats: JPEG, PNG, GIF, WEBP
+- Unique filename generation
+- Old file cleanup
+
+### Email Notification System
+- Welcome email for new users
+- HTML email templates with Thymeleaf
+- Gmail SMTP configuration
+- Error handling for email failures
+
+### New API Endpoints
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|---------|
+| POST | `/api/files/upload-avatar` | Upload user avatar | Authenticated |
+| GET | `/api/files/avatar/{filename}` | Serve avatar image | Public |
+
+### Configuration
+- File storage properties
+- Email service configuration
+- Multipart file upload settings

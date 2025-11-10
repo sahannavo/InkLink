@@ -1,0 +1,34 @@
+# InkLink - Story Sharing Platform
+
+## Project Overview
+InkLink is a web-based platform for sharing and discovering stories. Built with Spring Boot 3.x and modern web technologies.
+
+## Features
+- User registration and authentication
+- Story creation and sharing
+- User profiles with avatars
+- Like and reaction system
+- Email notifications
+
+## Tech Stack
+- **Backend**: Spring Boot 3.1.0, Java 17
+- **Security**: Spring Security with Session Authentication
+- **Frontend**: Thymeleaf, Bootstrap 5
+- **Database**: H2 (Development), MySQL (Production)
+- **Build Tool**: Maven
+
+## Day 1 Setup Complete ✅
+- Project structure initialized
+- Maven dependencies configured
+- Base entities created (User, Story)
+- Security configuration implemented
+- Basic templates created
+
+## Getting Started
+1. Clone the repository
+2. Run: `mvn spring-boot:run`
+3. Access: http://localhost:8080
+
+## Database Schema (Initial)
+- Users: id, username, email, password, avatar_url, bio, created_at, updated_at
+- Stories: id, title, content, author_id, created_at, updated_at

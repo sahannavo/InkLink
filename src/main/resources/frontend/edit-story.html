@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Story - InkLink</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/create-story.css">
+    <style>
+        /* Additional styles specific to edit page */
+        .edit-header {
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            color: white;
+            padding: 1rem 2rem;
+            margin: -2rem -2rem 2rem -2rem;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .edit-header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .story-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .story-stats-edit {
+            display: flex;
+            gap: 2rem;
+            font-size: 0.9rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            display: block;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .version-control {
+            background: var(--gray-100);
+            border: 1px solid var(--gray-300);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .version-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .version-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .version-list {
+            space-y: 0.5rem;
+        }
+
+        .version-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: var(--light);
+            border: 1px solid var(--gray-300);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .version-item:hover {
+            border-color: var(--primary);
+        }
+
+        .version-item.current {
+            border-color: var(--primary);
+            background: rgba(253, 187, 45, 0.05);
+        }
+
+        .version-meta {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .version-date {
+            font-size: 0.9rem;
+            color: var(--gray-600);
+        }
+
+        .version-author {
+            font-size: 0.8rem;
+            color: var(--gray-500);
+        }
+
+        .version-stats {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.8rem;
+            color: var(--gray-600);
+        }
+
+        .revision-changes {
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--gray-500);
+        }
+
+        .change-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            background: var(--warning);
+            color: var(--gray-800);
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .change-indicator.added {
+            background: var(--success);
+            color: white;
+        }
+
+        .change-indicator.removed {
+            background: var(--danger);
+            color: white;
+        }
+
+        .edit-history {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--gray-300);
+        }
+
+        .history-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            border-left: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .history-item:hover {
+            background: var(--gray-100);
+            border-left-color: var(--primary);
+        }
+
+        .history-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .history-content {
+            flex: 1;
+        }
+
+        .history-action {
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 0.25rem;
+        }
+
+        .history-date {
+            font-size: 0.8rem;
+            color: var(--gray-500);
+        }
+
+        .history-details {
+            font-size: 0.9rem;
+            color: var(--gray-600);
+            margin-top: 0.25rem;
+        }
+
+        .comparison-view {
+            display: none;
+            margin-top: 2rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .comparison-view.active {
+            display: block;
+        }
+
+        .comparison-header {
+            display: flex;
+            background: var(--gray-100);
+            border-bottom: 1px solid var(--gray-300);
+        }
+
+        .comparison-tab {
+            flex: 1;
+            padding: 1rem;
+            text-align: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .comparison-tab.active {
+            background: var(--light);
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .comparison-content {
+            display: flex;
+            height: 400px;
+        }
+
+        .comparison-pane {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            border-right: 1px solid var(--gray-300);
+        }
+
+        .comparison-pane:last-child {
+            border-right: none;
+        }
+
+        .diff-added {
+            background: rgba(40, 167, 69, 0.1);
+            text-decoration: underline;
+        }
+
+        .diff-removed {
+            background: rgba(220, 53, 69, 0.1);
+            text-decoration: line-through;
+        }
+
+        .editor-warnings {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid var(--warning);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .warning-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .warning-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .warning-item i {
+            color: var(--warning);
+        }
+
+        .edit-notice {
+            background: rgba(23, 162, 184, 0.1);
+            border: 1px solid var(--info);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .edit-notice i {
+            color: var(--info);
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+<!-- Navigation -->
+<nav class="navbar" id="navbar">
+    <div class="nav-container">
+        <div class="logo">
+            <a href="index.html">
+                <i class="fas fa-pen-fancy logo-icon"></i>
+                <h1>InkLink</h1>
+            </a>
+        </div>
+        <div class="nav-actions">
+            <button class="btn btn-outline" id="viewStoryBtn">
+                <i class="fas fa-eye"></i>
+                View Story
+            </button>
+            <button class="btn btn-outline" id="saveDraftBtn">
+                <i class="fas fa-save"></i>
+                Save Draft
+            </button>
+            <button class="btn btn-primary" id="publishBtn">
+                <i class="fas fa-sync-alt"></i>
+                Update Story
+            </button>
+            <div class="auth-buttons" id="authButtons">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="create-story-main">
+    <div class="editor-container">
+        <!-- Edit Header -->
+        <div class="edit-header">
+            <div class="edit-header-content">
+                <div class="story-info">
+                    <div>
+                        <h1>Edit Story</h1>
+                        <p id="storyTitleDisplay">Loading...</p>
+                    </div>
+                </div>
+                <div class="story-stats-edit">
+                    <div class="stat-item">
+                        <span class="stat-value" id="editViewCount">0</span>
+                        <span class="stat-label">Views</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="editLikeCount">0</span>
+                        <span class="stat-label">Likes</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="editCommentCount">0</span>
+                        <span class="stat-label">Comments</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Notice -->
+        <div class="edit-notice">
+            <i class="fas fa-info-circle"></i>
+            You are editing a published story. Changes will be visible to readers after you update the story.
+        </div>
+
+        <!-- Editor Warnings -->
+        <div class="editor-warnings hidden" id="editorWarnings">
+            <h4><i class="fas fa-exclamation-triangle"></i> Suggestions</h4>
+            <div id="warningsList">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+
+        <!-- Version Control -->
+        <section class="form-section version-control">
+            <div class="version-header">
+                <h2><i class="fas fa-code-branch"></i> Version History</h2>
+                <div class="version-actions">
+                    <button class="btn btn-outline btn-sm" id="compareVersionsBtn">
+                        <i class="fas fa-columns"></i>
+                        Compare Versions
+                    </button>
+                    <button class="btn btn-outline btn-sm" id="restoreVersionBtn">
+                        <i class="fas fa-history"></i>
+                        Restore Version
+                    </button>
+                </div>
+            </div>
+
+            <div class="version-list" id="versionList">
+                <!-- Dynamically populated -->
+            </div>
+
+            <!-- Comparison View -->
+            <div class="comparison-view" id="comparisonView">
+                <div class="comparison-header">
+                    <button class="comparison-tab active" data-pane="current">Current Version</button>
+                    <button class="comparison-tab" data-pane="selected">Selected Version</button>
+                </div>
+                <div class="comparison-content">
+                    <div class="comparison-pane" id="currentVersionPane">
+                        <!-- Current version content -->
+                    </div>
+                    <div class="comparison-pane" id="selectedVersionPane">
+                        <!-- Selected version content -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Story Form -->
+        <form class="story-form" id="storyForm">
+            <!-- Basic Info Section -->
+            <section class="form-section">
+                <h2>Story Details</h2>
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label for="storyTitle">Story Title *</label>
+                        <input
+                                type="text"
+                                id="storyTitle"
+                                class="form-control"
+                                placeholder="Enter an engaging title for your story..."
+                                maxlength="200"
+                                required
+                        >
+                        <div class="char-counter">
+                            <span id="titleCharCount">0</span>/200
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="storyCategory">Category *</label>
+                        <select id="storyCategory" class="form-control" required>
+                            <option value="">Select a category</option>
+                            <option value="FICTION">Fiction</option>
+                            <option value="NON_FICTION">Non-Fiction</option>
+                            <option value="POETRY">Poetry</option>
+                            <option value="FANTASY">Fantasy</option>
+                            <option value="SCI_FI">Science Fiction</option>
+                            <option value="MYSTERY">Mystery</option>
+                            <option value="ROMANCE">Romance</option>
+                            <option value="HORROR">Horror</option>
+                            <option value="HISTORICAL">Historical</option>
+                            <option value="BIOGRAPHY">Biography</option>
+                            <option value="SELF_HELP">Self Help</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="storyLanguage">Language</label>
+                        <select id="storyLanguage" class="form-control">
+                            <option value="ENGLISH">English</option>
+                            <option value="SPANISH">Spanish</option>
+                            <option value="FRENCH">French</option>
+                            <option value="GERMAN">German</option>
+                            <option value="OTHER">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="storySummary">Story Summary</label>
+                    <textarea
+                            id="storySummary"
+                            class="form-control"
+                            rows="3"
+                            placeholder="Write a brief summary of your story to attract readers..."
+                            maxlength="500"
+                    ></textarea>
+                    <div class="char-counter">
+                        <span id="summaryCharCount">0</span>/500
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tags Section -->
+            <section class="form-section">
+                <h2>Tags & Topics</h2>
+                <div class="form-group">
+                    <label for="storyTags">Add Tags</label>
+                    <div class="tags-input-container">
+                        <input
+                                type="text"
+                                id="storyTags"
+                                class="form-control"
+                                placeholder="Type a tag and press Enter..."
+                        >
+                        <div class="tags-suggestions" id="tagsSuggestions">
+                            <!-- Dynamically populated -->
+                        </div>
+                    </div>
+                    <div class="tags-hint">
+                        Add up to 10 tags to help readers discover your story
+                    </div>
+                    <div class="selected-tags" id="selectedTags">
+                        <!-- Dynamically populated -->
+                    </div>
+                    <div class="popular-tags">
+                        <h4>Popular Tags:</h4>
+                        <div class="tags-cloud" id="popularTags">
+                            <!-- Dynamically populated -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Content Section -->
+            <section class="form-section">
+                <h2>Story Content</h2>
+
+                <!-- Editor Toolbar -->
+                <div class="editor-toolbar" id="editorToolbar">
+                    <div class="toolbar-group">
+                        <button type="button" class="tool-btn" data-command="bold" title="Bold">
+                            <i class="fas fa-bold"></i>
+                        </button>
+                        <button type="button" class="tool-btn" data-command="italic" title="Italic">
+                            <i class="fas fa-italic"></i>
+                        </button>
+                        <button type="button" class="tool-btn" data-command="underline" title="Underline">
+                            <i class="fas fa-underline"></i>
+                        </button>
+                    </div>
+
+                    <div class="toolbar-group">
+                        <button type="button" class="tool-btn" data-command="formatBlock" data-value="h2" title="Heading">
+                            <i class="fas fa-heading"></i>
+                        </button>
+                        <button type="button" class="tool-btn" data-command="formatBlock" data-value="blockquote" title="Quote">
+                            <i class="fas fa-quote-right"></i>
+                        </button>
+                        <button type="button" class="tool-btn" data-command="insertUnorderedList" title="Bullet List">
+                            <i class="fas fa-list-ul"></i>
+                        </button>
+                        <button type="button" class="tool-btn" data-command="insertOrderedList" title="Numbered List">
+                            <i class="fas fa-list-ol"></i>
+                        </button>
+                    </div>
+
+                    <div class="toolbar-group">
+                        <button type="button" class="tool-btn" data-command="undo" title="Undo">
+                            <i class="fas fa-undo"></i>
+                        </button>
+                        <button type="button" class="tool-btn" data-command="redo" title="Redo">
+                            <i class="fas fa-redo"></i>
+                        </button>
+                    </div>
+
+                    <div class="toolbar-group">
+                        <button type="button" class="tool-btn" id="insertImageBtn" title="Insert Image">
+                            <i class="fas fa-image"></i>
+                        </button>
+                        <button type="button" class="tool-btn" id="fullscreenBtn" title="Fullscreen">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                        <button type="button" class="tool-btn" id="showChangesBtn" title="Show Changes">
+                            <i class="fas fa-code-compare"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Editor Content -->
+                <div class="editor-content">
+                    <div
+                            id="storyContent"
+                            class="story-editor"
+                            contenteditable="true"
+                            placeholder="Start writing your story here... Let your creativity flow!"
+                    ></div>
+                </div>
+
+                <!-- Editor Footer -->
+                <div class="editor-footer">
+                    <div class="editor-actions">
+                        <button type="button" class="btn btn-outline" id="clearFormatting">
+                            <i class="fas fa-eraser"></i>
+                            Clear Formatting
+                        </button>
+                        <button type="button" class="btn btn-outline" id="spellCheckBtn">
+                            <i class="fas fa-spell-check"></i>
+                            Spell Check
+                        </button>
+                        <button type="button" class="btn btn-outline" id="analyzeContentBtn">
+                            <i class="fas fa-chart-line"></i>
+                            Analyze
+                        </button>
+                    </div>
+                    <div class="editor-help">
+                        <i class="fas fa-lightbulb"></i>
+                        <span>Editing a published story. Changes will be visible to readers after update.</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Publishing Options -->
+            <section class="form-section">
+                <h2>Publishing Options</h2>
+                <div class="publishing-options">
+                    <div class="option-group">
+                        <label class="option-label">
+                            <input type="radio" name="publishOption" value="PUBLIC" checked>
+                            <div class="option-content">
+                                <div class="option-title">Public</div>
+                                <div class="option-description">
+                                    Anyone can read and share your story
+                                </div>
+                            </div>
+                        </label>
+
+                        <label class="option-label">
+                            <input type="radio" name="publishOption" value="UNLISTED">
+                            <div class="option-content">
+                                <div class="option-title">Unlisted</div>
+                                <div class="option-description">
+                                    Only people with the link can read your story
+                                </div>
+                            </div>
+                        </label>
+
+                        <label class="option-label">
+                            <input type="radio" name="publishOption" value="PRIVATE">
+                            <div class="option-content">
+                                <div class="option-title">Private</div>
+                                <div class="option-description">
+                                    Only you can see this story
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="allowComments" checked>
+                            <span class="checkmark"></span>
+                            Allow readers to comment on this story
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="allowLikes" checked>
+                            <span class="checkmark"></span>
+                            Allow readers to like this story
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="matureContent">
+                            <span class="checkmark"></span>
+                            This story contains mature content
+                            <span class="help-text">(Will add a content warning)</span>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="majorUpdate">
+                            <span class="checkmark"></span>
+                            This is a major update
+                            <span class="help-text">(Will notify followers and reset reading positions)</span>
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Edit History -->
+            <section class="form-section edit-history">
+                <h2>Edit History</h2>
+                <div id="editHistoryList">
+                    <!-- Dynamically populated -->
+                </div>
+            </section>
+
+            <!-- Action Buttons -->
+            <section class="form-actions">
+                <div class="action-buttons">
+                    <button type="button" class="btn btn-outline" id="cancelBtn">
+                        <i class="fas fa-times"></i>
+                        Cancel
+                    </button>
+                    <button type="button" class="btn btn-outline" id="saveDraftAction">
+                        <i class="fas fa-save"></i>
+                        Save Draft
+                    </button>
+                    <button type="button" class="btn btn-outline" id="previewBtn">
+                        <i class="fas fa-eye"></i>
+                        Preview Changes
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="updateStoryBtn">
+                        <i class="fas fa-sync-alt"></i>
+                        Update Story
+                    </button>
+                </div>
+            </section>
+        </form>
+    </div>
+
+    <!-- Preview Sidebar -->
+    <aside class="preview-sidebar" id="previewSidebar">
+        <div class="sidebar-header">
+            <h3>Preview Changes</h3>
+            <button class="btn btn-icon" id="closePreview">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="preview-content" id="previewContent">
+            <!-- Dynamically populated -->
+        </div>
+    </aside>
+</main>
+
+<!-- Image Upload Modal -->
+<div class="modal-overlay hidden" id="imageUploadModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Insert Image</h3>
+            <button class="modal-close" id="closeImageModal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="upload-options">
+                <div class="upload-option active" data-method="upload">
+                    <i class="fas fa-upload"></i>
+                    <span>Upload Image</span>
+                </div>
+                <div class="upload-option" data-method="url">
+                    <i class="fas fa-link"></i>
+                    <span>From URL</span>
+                </div>
+            </div>
+
+            <div class="upload-content" id="uploadContent">
+                <div class="upload-area" id="uploadArea">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Drag & drop your image here</p>
+                    <span class="upload-hint">or</span>
+                    <button class="btn btn-outline" id="browseFiles">
+                        Browse Files
+                    </button>
+                    <input type="file" id="imageFile" accept="image/*" class="hidden">
+                </div>
+
+                <div class="url-input hidden" id="urlInput">
+                    <input type="url" id="imageUrl" class="form-control" placeholder="Paste image URL...">
+                    <button class="btn btn-primary" id="insertUrlImage">Insert Image</button>
+                </div>
+            </div>
+
+            <div class="upload-preview hidden" id="uploadPreview">
+                <img id="previewImage" src="" alt="Preview">
+                <div class="preview-actions">
+                    <button class="btn btn-outline" id="changeImage">Change</button>
+                    <button class="btn btn-primary" id="insertImage">Insert into Story</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Changes Summary Modal -->
+<div class="modal-overlay hidden" id="changesModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Changes Summary</h3>
+            <button class="modal-close" id="closeChangesModal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="changes-summary" id="changesSummary">
+                <!-- Dynamically populated -->
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" id="cancelChanges">Cancel</button>
+                <button class="btn btn-primary" id="confirmUpdate">Update Story</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Auto-save Indicator -->
+<div class="auto-save-indicator" id="autoSaveIndicator">
+    <i class="fas fa-check-circle"></i>
+    <span>All changes saved</span>
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-content">
+        <div class="footer-section">
+            <div class="logo">
+                <i class="fas fa-pen-fancy logo-icon"></i>
+                <h2>InkLink</h2>
+            </div>
+            <p>Share your stories with the world. Connect with readers and writers everywhere.</p>
+        </div>
+        <div class="footer-section">
+            <h3>Resources</h3>
+            <a href="#writing-tips">Writing Tips</a>
+            <a href="#style-guide">Style Guide</a>
+            <a href="#community">Community</a>
+            <a href="#help">Help Center</a>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2023 InkLink. All rights reserved.</p>
+    </div>
+</footer>
+
+<!-- Scripts -->
+<script src="js/api.js"></script>
+<script src="js/create-story.js"></script>
+<script src="js/edit-story.js"></script>
+</body>
+</html>
