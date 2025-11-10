@@ -82,6 +82,15 @@ public class StoryController {
                 storyService.incrementReadCount(id);
             }
 
+            // Check if current user has liked this story
+            User currentUser = getCurrentUser(request);
+            if (currentUser != null) {
+                boolean hasLiked = storyService.hasUserLikedStory(id, currentUser.getId());
+                story.get().setLiked(hasLiked);
+            } else {
+                story.get().setLiked(false);
+            }
+
             return ResponseEntity.ok(new ApiResponse(true, "Story retrieved successfully", story.get()));
 
         } catch (Exception e) {
@@ -173,8 +182,8 @@ public class StoryController {
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse> deleteStory(@PathVariable Long id, HttpServletRequest request) {
         try {
-            User author = getCurrentUser(request);
-            if (author == null) {
+            User currentUser = getCurrentUser(request);
+            if (currentUser == null) {
                 return ResponseEntity.status(401)
                         .body(new ApiResponse(false, "Authentication required"));
             }
@@ -184,8 +193,11 @@ public class StoryController {
                 return ResponseEntity.notFound().build();
             }
 
-            // Check if user is the author
-            if (!storyService.isStoryAuthor(id, author.getId())) {
+            // Check if user is the author OR an admin
+            boolean isAuthor = storyService.isStoryAuthor(id, currentUser.getId());
+            boolean isAdmin = currentUser.getRole().name().equals("ADMIN");
+            
+            if (!isAuthor && !isAdmin) {
                 return ResponseEntity.status(403)
                         .body(new ApiResponse(false, "Not authorized to delete this story"));
             }

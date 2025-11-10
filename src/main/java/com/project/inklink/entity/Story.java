@@ -45,9 +45,9 @@ public class Story {
     @Column(nullable = false)
     private Integer readCount = 0;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "author_id", nullable = false)
-    @JsonBackReference // Prevents serialization of author back to stories
+    @JsonProperty("author") // Allow author serialization with only essential fields
     private User author;
 
     @OneToMany(mappedBy = "story", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -67,6 +67,10 @@ public class Story {
 
     @Column(nullable = false)
     private LocalDateTime updatedAt;
+
+    // Transient field to track if current user liked this story
+    @Transient
+    private Boolean liked = false;
 
     // Constructors
     public Story() {
@@ -130,6 +134,10 @@ public class Story {
     //like count
     public Integer getLikeCount() { return likeCount; }
     public void setLikeCount(Integer likeCount) { this.likeCount = likeCount; }
+
+    // Liked status
+    public Boolean getLiked() { return liked; }
+    public void setLiked(Boolean liked) { this.liked = liked; }
 
     // Utility methods
     public void addComment(Comment comment) {

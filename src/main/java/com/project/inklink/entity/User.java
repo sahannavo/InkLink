@@ -45,7 +45,7 @@ public class User implements Serializable {
     private String profilePicture;
 
     @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
-    @JsonManagedReference("user-stories") // Manages serialization of stories
+    @JsonIgnore // Prevent serialization of stories to avoid circular references
     private List<Story> stories = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)

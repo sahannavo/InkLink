@@ -395,6 +395,32 @@ body {
     font-weight: 600;
 }
 
+.delete-btn {
+    background: transparent;
+    border: 2px solid var(--danger);
+    color: var(--danger);
+}
+
+.delete-btn:hover {
+    background: var(--danger);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+}
+
+.edit-btn {
+    background: transparent;
+    border: 2px solid var(--info);
+    color: var(--info);
+}
+
+.edit-btn:hover {
+    background: var(--info);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(23, 162, 184, 0.3);
+}
+
 .social-share {
     position: relative;
 }

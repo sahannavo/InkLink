@@ -15,14 +15,9 @@ class StoryPage {
     async init() {
         await this.checkAuthentication();
         this.setupEventListeners();
-        this.loadPopularTags();
-        this.loadStories();
-        this.updateStats();
-
-        // Only setup auth UI if the element exists
-        if (document.getElementById('authButtons')) {
-            await this.checkAuthentication();
-        }
+        this.loadReadingSettings();
+        this.setupScrollProgress();
+        await this.loadStory();
     }
 
     getStoryIdFromURL() {
@@ -73,17 +68,16 @@ class StoryPage {
             authButtons.innerHTML = `
             <div class="user-menu">
                 <div class="user-info">
-                    <div class="user-avatar">${this.currentUser.username?.charAt(0)?.toUpperCase() || 'U'}</div>
+                    
                     <span class="username">${this.currentUser.username}</span>
                 </div>
                 <div class="user-dropdown">
-                    <a href="#profile" class="dropdown-item">Profile</a>
-                    <a href="#my-stories" class="dropdown-item">My Stories</a>
-                    <a href="#settings" class="dropdown-item">Settings</a>
-                    <button class="dropdown-item logout-btn" onclick="storiesPage.logout()">Logout</button>
+                    
+                    <button class="dropdown-item logout-btn" onclick="storyPage.logout()">Logout</button>
                 </div>
             </div>
         `;
+        
         } else {
             authButtons.innerHTML = `
             <div class="auth-buttons">
@@ -230,6 +224,22 @@ class StoryPage {
                 }
             });
         }
+
+        // Edit button
+        const editBtn = document.getElementById('editBtn');
+        if (editBtn) {
+            editBtn.addEventListener('click', () => {
+                this.editStory();
+            });
+        }
+
+        // Delete button
+        const deleteBtn = document.getElementById('deleteBtn');
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', () => {
+                this.deleteStory();
+            });
+        }
     }
 
     async loadStory() {
@@ -300,6 +310,9 @@ class StoryPage {
 
         // Like button state
         this.updateLikeButton();
+
+        // Show edit/delete buttons if user is author or admin
+        this.updateEditDeleteButtons();
 
         // Reading time
         this.calculateReadingTime();
@@ -516,6 +529,11 @@ class StoryPage {
     async toggleLike() {
         if (!this.currentUser) {
             window.location.href = 'login.html';
+            return;
+        }
+
+        if (!this.story) {
+            this.showNotification('Story is still loading. Please wait.', 'info');
             return;
         }
 
@@ -925,6 +943,71 @@ class StoryPage {
             window.authManager.showNotification(message, type);
         } else {
             alert(message);
+        }
+    }
+
+    updateEditDeleteButtons() {
+        const editBtn = document.getElementById('editBtn');
+        const deleteBtn = document.getElementById('deleteBtn');
+
+        if (!editBtn || !deleteBtn) return;
+
+        // Check if user is logged in
+        if (!this.currentUser || !this.story) {
+            editBtn.style.display = 'none';
+            deleteBtn.style.display = 'none';
+            return;
+        }
+
+        // Check if user is the author or admin
+        const isAuthor = this.story.author?.id === this.currentUser.id;
+        const isAdmin = this.currentUser.role === 'ADMIN';
+
+        if (isAuthor || isAdmin) {
+            editBtn.style.display = 'inline-flex';
+            deleteBtn.style.display = 'inline-flex';
+        } else {
+            editBtn.style.display = 'none';
+            deleteBtn.style.display = 'none';
+        }
+    }
+
+    editStory() {
+        if (!this.story) return;
+        window.location.href = `edit-story.html?id=${this.story.id}`;
+    }
+
+    async deleteStory() {
+        if (!this.story) return;
+
+        // Confirm deletion
+        const confirmDelete = confirm(
+            `Are you sure you want to delete "${this.story.title}"?\n\nThis action cannot be undone.`
+        );
+
+        if (!confirmDelete) return;
+
+        try {
+            const response = await fetch(`/api/stories/${this.story.id}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                this.showNotification('Story deleted successfully!', 'success');
+                
+                // Redirect to stories page after a short delay
+                setTimeout(() => {
+                    window.location.href = 'stories.html';
+                }, 1500);
+            } else {
+                const result = await response.json();
+                throw new Error(result.message || 'Failed to delete story');
+            }
+        } catch (error) {
+            console.error('Error deleting story:', error);
+            this.showNotification('Failed to delete story: ' + error.message, 'error');
         }
     }
 

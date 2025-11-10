@@ -140,17 +140,20 @@
                 <button class="btn btn-icon bookmark-btn" id="bookmarkBtn">
                     <i class="fas fa-bookmark"></i>
                 </button>
+                
+                <!-- Edit and Delete buttons (shown only to author or admin) -->
+                <button class="btn btn-outline edit-btn" id="editBtn" style="display: none;">
+                    <i class="fas fa-edit"></i>
+                    <span>Edit</span>
+                </button>
+                
+                <button class="btn btn-outline delete-btn" id="deleteBtn" style="display: none;">
+                    <i class="fas fa-trash"></i>
+                    <span>Delete</span>
+                </button>
             </div>
 
-            <div class="action-info">
-                <div class="liked-by" id="likedBy">
-                    <div class="avatars">
-                        <div class="avatar">MS</div>
-                        <div class="avatar">SW</div>
-                        <div class="avatar">+15</div>
-                    </div>
-                </div>
-            </div>
+            
         </footer>
     </article>
 
