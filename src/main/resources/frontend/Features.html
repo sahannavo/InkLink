@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Features - InkLink</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-red: #e63946;
+            --secondary-orange: #f77f00;
+            --accent-yellow: #ffd166;
+            --light-yellow: #fff9e6;
+            --white: #ffffff;
+            --dark: #333333;
+            --light-gray: #f5f5f5;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-yellow);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Header Styles */
+        header {
+            background: linear-gradient(135deg, var(--primary-red), var(--secondary-orange));
+            color: var(--white);
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-decoration: none;
+            color: var(--white);
+            animation: fadeInDown 1s ease;
+        }
+
+        .logo i {
+            color: var(--accent-yellow);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--white);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-yellow);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--accent-yellow);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--primary-red), var(--secondary-orange));
+            color: var(--white);
+            padding: 6rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 Z" fill="rgba(255,255,255,0.1)"/></svg>');
+            background-size: cover;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            animation: fadeInUp 1s ease;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            animation: fadeInUp 1s ease 0.2s both;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background-color: var(--accent-yellow);
+            color: var(--dark);
+            padding: 0.8rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            animation: fadeInUp 1s ease 0.4s both;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        /* Features Overview */
+        .features-overview {
+            padding: 5rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+            color: var(--primary-red);
+            margin-bottom: 1rem;
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-title h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary-red), var(--secondary-orange));
+            border-radius: 2px;
+        }
+
+        .section-title p {
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .feature-card {
+            background-color: var(--white);
+            border-radius: 10px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            border-top: 4px solid var(--primary-red);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            border-top: 4px solid var(--secondary-orange);
+        }
+
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1.5rem;
+            background: linear-gradient(135deg, var(--primary-red), var(--secondary-orange));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 2rem;
+        }
+
+        .feature-card h3 {
+            color: var(--primary-red);
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        /* Detailed Features */
+        .detailed-features {
+            padding: 5rem 2rem;
+            background-color: var(--white);
+        }
+
+        .feature-detail {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            margin-bottom: 5rem;
+        }
+
+        .feature-detail:nth-child(even) .feature-image {
+            order: 2;
+        }
+
+        .feature-detail:nth-child(even) .feature-text {
+            order: 1;
+        }
+
+        .feature-text h3 {
+            font-size: 2rem;
+            color: var(--primary-red);
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-text p {
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .feature-list li {
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .feature-list li i {
+            color: var(--secondary-orange);
+            margin-top: 5px;
+        }
+
+        .feature-image {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Platform Stats */
+        .platform-stats {
+            padding: 5rem 2rem;
+            background: linear-gradient(135deg, var(--primary-red), var(--secondary-orange));
+            color: var(--white);
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .stat-item {
+            padding: 2rem;
+        }
+
+        .stat-item h3 {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Testimonials */
+        .testimonials-section {
+            padding: 5rem 2rem;
+            background-color: var(--light-gray);
+        }
+
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .testimonial-card {
+            background-color: var(--white);
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .testimonial-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .testimonial-text {
+            font-style: italic;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .testimonial-text::before {
+            content: '"';
+            font-size: 4rem;
+            color: var(--accent-yellow);
+            position: absolute;
+            top: -20px;
+            left: -10px;
+            opacity: 0.3;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .author-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-red), var(--secondary-orange));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-weight: 700;
+        }
+
+        .author-info h4 {
+            color: var(--primary-red);
+            margin-bottom: 0.2rem;
+        }
+
+        .author-info p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 5rem 2rem;
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary-red), var(--secondary-orange));
+            color: var(--white);
+        }
+
+        .cta-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .cta-content h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .cta-content p {
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--dark);
+            color: var(--white);
+            padding: 4rem 2rem 2rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 3rem;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .footer-logo i {
+            color: var(--accent-yellow);
+        }
+
+        .footer-links h4 {
+            color: var(--accent-yellow);
+            margin-bottom: 1.5rem;
+            font-size: 1.2rem;
+        }
+
+        .footer-links ul {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-links a {
+            color: #ccc;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent-yellow);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            color: var(--white);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            background-color: var(--accent-yellow);
+            color: var(--dark);
+            transform: translateY(-3px);
+        }
+
+        .copyright {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #aaa;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .animate-on-scroll.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .features-grid, .testimonials-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .feature-detail {
+                grid-template-columns: 1fr;
+            }
+
+            .feature-detail:nth-child(even) .feature-image {
+                order: 1;
+            }
+
+            .feature-detail:nth-child(even) .feature-text {
+                order: 2;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-links {
+                gap: 1.5rem;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .features-grid, .testimonials-grid, .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Header -->
+<header>
+    <nav class="navbar">
+        <a href="index.html" class="logo">
+            <i class="fas fa-pen-fancy"></i>
+            InkLink
+        </a>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="stories.html">Stories</a>
+            <a href="about.html">About</a>
+            <a href="features.html" class="active">Features</a>
+            <a href="writing-tips.html">Writing Tips</a>
+            <a href="contact.html">Contact</a>
+        </div>
+    </nav>
+</header>
+
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>Powerful Features for Storytellers</h1>
+        <p>Discover how InkLink's innovative tools and community features help writers create, share, and connect like never before.</p>
+        <a href="#features" class="cta-button">Explore Features</a>
+    </div>
+</section>
+
+<!-- Features Overview -->
+<section class="features-overview" id="features">
+    <div class="section-title">
+        <h2>InkLink Features</h2>
+        <p>Everything you need to write, publish, and grow your audience</p>
+    </div>
+
+    <div class="features-grid">
+        <div class="feature-card animate-on-scroll">
+            <div class="feature-icon">
+                <i class="fas fa-edit"></i>
+            </div>
+            <h3>Intuitive Writing Tools</h3>
+            <p>Focus on your craft with our distraction-free editor, formatting options, and auto-save functionality.</p>
+        </div>
+
+        <div class="feature-card animate-on-scroll">
+            <div class="feature-icon">
+                <i class="fas fa-layer-group"></i>
+            </div>
+            <h3>Organized Workspace</h3>
+            <p>Keep all your stories, drafts, and ideas neatly organized with our project management system.</p>
+        </div>
+
+        <div class="feature-card animate-on-scroll">
+            <div class="feature-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <h3>Vibrant Community</h3>
+            <p>Connect with fellow writers, join writing groups, and participate in collaborative projects.</p>
+        </div>
+
+        <div class="feature-card animate-on-scroll">
+            <div class="feature-icon">
+                <i class="fas fa-chart-bar"></i>
+            </div>
+            <h3>Performance Analytics</h3>
+            <p>Track your story's performance with detailed readership stats and engagement metrics.</p>
+        </div>
+
+        <div class="feature-card animate-on-scroll">
+            <div class="feature-icon">
+                <i class="fas fa-trophy"></i>
+            </div>
+            <h3>Writing Challenges</h3>
+            <p>Participate in monthly writing challenges to push your creativity and gain recognition.</p>
+        </div>
+
+        <div class="feature-card animate-on-scroll">
+            <div class="feature-icon">
+                <i class="fas fa-mobile-alt"></i>
+            </div>
+            <h3>Mobile Experience</h3>
+            <p>Write and read on the go with our fully responsive design and dedicated mobile apps.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Detailed Features -->
+<section class="detailed-features">
+    <div class="feature-detail animate-on-scroll">
+        <div class="feature-text">
+            <h3>Advanced Writing Environment</h3>
+            <p>Our writing interface is designed specifically for storytellers, with features that help you focus on your craft while providing powerful tools when you need them.</p>
+            <ul class="feature-list">
+                <li><i class="fas fa-check"></i> Distraction-free writing mode</li>
+                <li><i class="fas fa-check"></i> Real-time word count and progress tracking</li>
+                <li><i class="fas fa-check"></i> Customizable formatting options</li>
+                <li><i class="fas fa-check"></i> Auto-save and version history</li>
+                <li><i class="fas fa-check"></i> Export to multiple formats (PDF, EPUB, DOCX)</li>
+            </ul>
+            <a href="#" class="cta-button">Try Our Editor</a>
+        </div>
+        <div class="feature-image">
+            <!-- Placeholder for feature image -->
+            <div style="width:100%; height:400px; background:linear-gradient(135deg, var(--primary-red), var(--secondary-orange)); display:flex; align-items:center; justify-content:center; color:white; font-size:1.5rem;">
+                <i class="fas fa-edit" style="font-size:4rem; margin-right:1rem;"></i>
+                Writing Interface Preview
+            </div>
+        </div>
+    </div>
+
+    <div class="feature-detail animate-on-scroll">
+        <div class="feature-text">
+            <h3>Engage With Your Readers</h3>
+            <p>Build meaningful connections with your audience through our interactive features that make storytelling a two-way conversation.</p>
+            <ul class="feature-list">
+                <li><i class="fas fa-check"></i> Reader comments and feedback system</li>
+                <li><i class="fas fa-check"></i> Chapter-by-chapter reactions</li>
+                <li><i class="fas fa-check"></i> Direct messaging with your readers</li>
+                <li><i class="fas fa-check"></i> Polls and Q&A features</li>
+                <li><i class="fas fa-check"></i> Reader subscription options</li>
+            </ul>
+            <a href="#" class="cta-button">Connect With Readers</a>
+        </div>
+        <div class="feature-image">
+            <!-- Placeholder for feature image -->
+            <div style="width:100%; height:400px; background:linear-gradient(135deg, var(--primary-red), var(--secondary-orange)); display:flex; align-items:center; justify-content:center; color:white; font-size:1.5rem;">
+                <i class="fas fa-comments" style="font-size:4rem; margin-right:1rem;"></i>
+                Reader Engagement Features
+            </div>
+        </div>
+    </div>
+
+    <div class="feature-detail animate-on-scroll">
+        <div class="feature-text">
+            <h3>Collaborative Writing</h3>
+            <p>Work together with other writers on shared projects, co-author stories, or get feedback through our collaborative features.</p>
+            <ul class="feature-list">
+                <li><i class="fas fa-check"></i> Real-time co-authoring</li>
+                <li><i class="fas fa-check"></i> Comment and suggestion system</li>
+                <li><i class="fas fa-check"></i> Writing groups and workshops</li>
+                <li><i class="fas fa-check"></i> Beta reader matching</li>
+                <li><i class="fas fa-check"></i> Collaborative story universes</li>
+            </ul>
+            <a href="#" class="cta-button">Start Collaborating</a>
+        </div>
+        <div class="feature-image">
+            <!-- Placeholder for feature image -->
+            <div style="width:100%; height:400px; background:linear-gradient(135deg, var(--primary-red), var(--secondary-orange)); display:flex; align-items:center; justify-content:center; color:white; font-size:1.5rem;">
+                <i class="fas fa-user-friends" style="font-size:4rem; margin-right:1rem;"></i>
+                Collaboration Tools
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Platform Stats -->
+<section class="platform-stats">
+    <div class="section-title">
+        <h2>InkLink By The Numbers</h2>
+        <p>Join our growing community of writers and readers</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-item animate-on-scroll">
+            <h3>50K+</h3>
+            <p>Stories Published</p>
+        </div>
+
+        <div class="stat-item animate-on-scroll">
+            <h3>15K+</h3>
+            <p>Active Writers</p>
+        </div>
+
+        <div class="stat-item animate-on-scroll">
+            <h3>2M+</h3>
+            <p>Readers Worldwide</p>
+        </div>
+
+        <div class="stat-item animate-on-scroll">
+            <h3>120+</h3>
+            <p>Countries Reached</p>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials -->
+<section class="testimonials-section">
+    <div class="section-title">
+        <h2>What Writers Say About InkLink</h2>
+        <p>Discover how InkLink has helped writers achieve their goals</p>
+    </div>
+
+    <div class="testimonials-grid">
+        <div class="testimonial-card animate-on-scroll">
+            <div class="testimonial-text">
+                InkLink transformed my writing process. The community feedback helped me improve my craft, and I've connected with readers from around the world.
+            </div>
+            <div class="testimonial-author">
+                <div class="author-avatar">SW</div>
+                <div class="author-info">
+                    <h4>Sarah Writer</h4>
+                    <p>Published 12 stories</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="testimonial-card animate-on-scroll">
+            <div class="testimonial-text">
+                The collaborative features allowed me to co-write a novel with a friend across the country. We couldn't have done it without InkLink's tools.
+            </div>
+            <div class="testimonial-author">
+                <div class="author-avatar">MJ</div>
+                <div class="author-info">
+                    <h4>Michael Johnson</h4>
+                    <p>Co-author of "Echoes of Time"</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="testimonial-card animate-on-scroll">
+            <div class="testimonial-text">
+                As a new writer, the monthly challenges pushed me to write consistently. I went from writing short paragraphs to completing my first novel!
+            </div>
+            <div class="testimonial-author">
+                <div class="author-avatar">EP</div>
+                <div class="author-info">
+                    <h4>Emily Parker</h4>
+                    <p>First-time novelist</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="cta-content">
+        <h2>Ready to Start Your Writing Journey?</h2>
+        <p>Join thousands of writers who are already sharing their stories on InkLink</p>
+        <a href="signup.html" class="cta-button">Create Your Free Account</a>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer>
+    <div class="footer-content">
+        <div class="footer-about">
+            <div class="footer-logo">
+                <i class="fas fa-pen-fancy"></i>
+                InkLink
+            </div>
+            <p>InkLink is a platform dedicated to connecting storytellers with readers worldwide. Join our community and share your voice today.</p>
+            <div class="social-links">
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-linkedin-in"></i></a>
+            </div>
+        </div>
+
+        <div class="footer-links">
+            <h4>Explore</h4>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="stories.html">Stories</a></li>
+                <li><a href="features.html">Featured</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-links">
+            <h4>Resources</h4>
+            <ul>
+                <li><a href="tips.html">Writing Tips</a>
+                <li><a href="#events">Events</a></li>
+                <li><a href="help.html">Help Center</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-links">
+            <h4>Company</h4>
+            <ul>
+                <li><a href="about.html">About Us</a></li>
+                <li><a href="careers.html">Careers</a></li>
+                <li><a href="about.html">Contact</a></li>
+                <li><a href="#privacy">Privacy Policy</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="copyright">
+        <p>&copy; 2023 InkLink. All rights reserved.</p>
+    </div>
+</footer>
+
+<script>
+    // Animation on scroll
+    document.addEventListener('DOMContentLoaded', function() {
+        const animatedElements = document.querySelectorAll('.animate-on-scroll');
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+
+        animatedElements.forEach(element => {
+            observer.observe(element);
+        });
+
+        // Add some interactive elements
+        const featureCards = document.querySelectorAll('.feature-card');
+        featureCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-10px) scale(1.02)';
+            });
+
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+    });
+</script>
+</body>
+</html>

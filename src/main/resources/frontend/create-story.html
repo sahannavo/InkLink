@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New Story - InkLink</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/create-story.css">
+</head>
+<body>
+<!-- Navigation -->
+<nav class="navbar" id="navbar">
+    <div class="nav-container">
+        <div class="logo">
+            <a href="index.html">
+                <i class="fas fa-pen-fancy logo-icon"></i>
+                <h1>InkLink</h1>
+            </a>
+        </div>
+        <div class="nav-actions">
+            <button class="btn btn-outline" id="saveDraftBtn">
+                <i class="fas fa-save"></i>
+                Save Draft
+            </button>
+            <button class="btn btn-primary" id="previewBtn">
+                <i class="fas fa-eye"></i>
+                Preview
+            </button>
+            <div class="auth-buttons" id="authButtons">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="create-story-main">
+    <div class="editor-container">
+        <!-- Editor Header -->
+        <div class="editor-header">
+            <h1>Create New Story</h1>
+            <div class="editor-stats">
+                <div class="stat">
+                    <span class="stat-label">Words</span>
+                    <span class="stat-value" id="wordCount">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Characters</span>
+                    <span class="stat-value" id="charCount">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Reading Time</span>
+                    <span class="stat-value" id="readingTime">0 min</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Story Form -->
+        <form class="story-form" id="storyForm">
+            <!-- Basic Info Section -->
+            <section class="form-section">
+                <h2>Story Details</h2>
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label for="storyTitle">Story Title *</label>
+                        <input
+                                type="text"
+                                id="storyTitle"
+                                class="form-control"
+                                placeholder="Enter an engaging title for your story..."
+                                maxlength="200"
+                                required
+                        >
+                        <div class="char-counter">
+                            <span id="titleCharCount">0</span>/200
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="storyCategory">Category *</label>
+                        <select id="storyCategory" class="form-control" required>
+                            <option value="">Select a category</option>
+                            <option value="FICTION">Fiction</option>
+                            <option value="NON_FICTION">Non-Fiction</option>
+                            <option value="POETRY">Poetry</option>
+                            <option value="FANTASY">Fantasy</option>
+                            <option value="SCI_FI">Science Fiction</option>
+                            <option value="MYSTERY">Mystery</option>
+                            <option value="ROMANCE">Romance</option>
+                            <option value="HORROR">Horror</option>
+                            <option value="HISTORICAL">Historical</option>
+                            <option value="BIOGRAPHY">Biography</option>
+                            <option value="SELF_HELP">Self Help</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="storyLanguage">Language</label>
+                        <select id="storyLanguage" class="form-control">
+                            <option value="ENGLISH">English</option>
+                            <option value="SPANISH">Spanish</option>
+                            <option value="FRENCH">French</option>
+                            <option value="GERMAN">German</option>
+                            <option value="OTHER">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="storySummary">Story Summary</label>
+                    <textarea
+                            id="storySummary"
+                            class="form-control"
+                            rows="3"
+                            placeholder="Write a brief summary of your story to attract readers..."
+                            maxlength="500"
+                    ></textarea>
+                    <div class="char-counter">
+                        <span id="summaryCharCount">0</span>/500
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tags Section -->
+            <section class="form-section">
+                <h2>Tags & Topics</h2>
+                <div class="form-group">
+                    <label for="storyTags">Add Tags</label>
+                    <div class="tags-input-container">
+                        <input
+                                type="text"
+                                id="storyTags"
+                                class="form-control"
+                                placeholder="Type a tag and press Enter..."
+                        >
+                        <div class="tags-suggestions" id="tagsSuggestions">
+                            <!-- Dynamically populated -->
+                        </div>
+                    </div>
+                    <div class="tags-hint">
+                        Add up to 10 tags to help readers discover your story
+                    </div>
+                    <div class="selected-tags" id="selectedTags">
+                        <!-- Dynamically populated -->
+                    </div>
+                    <div class="popular-tags">
+                        <h4>Popular Tags:</h4>
+                        <div class="tags-cloud" id="popularTags">
+                            <!-- Dynamically populated -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Content Section -->
+            <section class="form-section">
+                <h2>Story Content</h2>
+
+                <!-- Editor Toolbar -->
+                <div class="editor-toolbar" id="editorToolbar">
+                    <div class="toolbar-group">
+                        <button type="button" class="tool-btn" data-command="bold" title="Bold">
+                            <i class="fas fa-bold"></i>
+                        </button>
+                        <button type="button" class="tool-btn" data-command="italic" title="Italic">
+                            <i class="fas fa-italic"></i>
+                        </button>
+                        <button type="button" class="tool-btn" data-command="underline" title="Underline">
+                            <i class="fas fa-underline"></i>
+                        </button>
+                    </div>
+
+                    <div class="toolbar-group">
+                        <button type="button" class="tool-btn" data-command="formatBlock" data-value="h2" title="Heading">
+                            <i class="fas fa-heading"></i>
+                        </button>
+                        <button type="button" class="tool-btn" data-command="formatBlock" data-value="blockquote" title="Quote">
+                            <i class="fas fa-quote-right"></i>
+                        </button>
+                        <button type="button" class="tool-btn" data-command="insertUnorderedList" title="Bullet List">
+                            <i class="fas fa-list-ul"></i>
+                        </button>
+                        <button type="button" class="tool-btn" data-command="insertOrderedList" title="Numbered List">
+                            <i class="fas fa-list-ol"></i>
+                        </button>
+                    </div>
+
+                    <div class="toolbar-group">
+                        <button type="button" class="tool-btn" data-command="undo" title="Undo">
+                            <i class="fas fa-undo"></i>
+                        </button>
+                        <button type="button" class="tool-btn" data-command="redo" title="Redo">
+                            <i class="fas fa-redo"></i>
+                        </button>
+                    </div>
+
+                    <div class="toolbar-group">
+                        <button type="button" class="tool-btn" id="insertImageBtn" title="Insert Image">
+                            <i class="fas fa-image"></i>
+                        </button>
+                        <button type="button" class="tool-btn" id="fullscreenBtn" title="Fullscreen">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Editor Content -->
+                <div class="editor-content">
+                    <div
+                            id="storyContent"
+                            class="story-editor"
+                            contenteditable="true"
+                            placeholder="Start writing your story here... Let your creativity flow!"
+                    ></div>
+                </div>
+
+                <!-- Editor Footer -->
+                <div class="editor-footer">
+                    <div class="editor-actions">
+                        <button type="button" class="btn btn-outline" id="clearFormatting">
+                            <i class="fas fa-eraser"></i>
+                            Clear Formatting
+                        </button>
+                        <button type="button" class="btn btn-outline" id="spellCheckBtn">
+                            <i class="fas fa-spell-check"></i>
+                            Spell Check
+                        </button>
+                    </div>
+                    <div class="editor-help">
+                        <i class="fas fa-lightbulb"></i>
+                        <span>Tip: Use Markdown shortcuts for faster formatting</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Publishing Options -->
+            <section class="form-section">
+                <h2>Publishing Options</h2>
+                <div class="publishing-options">
+                    <div class="option-group">
+                        <label class="option-label">
+                            <input type="radio" name="publishOption" value="PUBLIC" checked>
+                            <div class="option-content">
+                                <div class="option-title">Public</div>
+                                <div class="option-description">
+                                    Anyone can read and share your story
+                                </div>
+                            </div>
+                        </label>
+
+                        <label class="option-label">
+                            <input type="radio" name="publishOption" value="UNLISTED">
+                            <div class="option-content">
+                                <div class="option-title">Unlisted</div>
+                                <div class="option-description">
+                                    Only people with the link can read your story
+                                </div>
+                            </div>
+                        </label>
+
+                        <label class="option-label">
+                            <input type="radio" name="publishOption" value="PRIVATE">
+                            <div class="option-content">
+                                <div class="option-title">Private</div>
+                                <div class="option-description">
+                                    Only you can see this story
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="allowComments" checked>
+                            <span class="checkmark"></span>
+                            Allow readers to comment on this story
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="allowLikes" checked>
+                            <span class="checkmark"></span>
+                            Allow readers to like this story
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="matureContent">
+                            <span class="checkmark"></span>
+                            This story contains mature content
+                            <span class="help-text">(Will add a content warning)</span>
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Action Buttons -->
+            <section class="form-actions">
+                <div class="action-buttons">
+                    <button type="button" class="btn btn-outline" id="cancelBtn">
+                        <i class="fas fa-times"></i>
+                        Cancel
+                    </button>
+                    <button type="button" class="btn btn-outline" id="saveDraftAction">
+                        <i class="fas fa-save"></i>
+                        Save Draft
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="publishBtn">
+                        <i class="fas fa-paper-plane"></i>
+                        Publish Story
+                    </button>
+                </div>
+            </section>
+        </form>
+    </div>
+
+    <!-- Preview Sidebar -->
+    <aside class="preview-sidebar" id="previewSidebar">
+        <div class="sidebar-header">
+            <h3>Story Preview</h3>
+            <button class="btn btn-icon" id="closePreview">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="preview-content" id="previewContent">
+            <!-- Dynamically populated -->
+        </div>
+    </aside>
+</main>
+
+<!-- Image Upload Modal -->
+<div class="modal-overlay hidden" id="imageUploadModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Insert Image</h3>
+            <button class="modal-close" id="closeImageModal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="upload-options">
+                <div class="upload-option active" data-method="upload">
+                    <i class="fas fa-upload"></i>
+                    <span>Upload Image</span>
+                </div>
+                <div class="upload-option" data-method="url">
+                    <i class="fas fa-link"></i>
+                    <span>From URL</span>
+                </div>
+            </div>
+
+            <div class="upload-content" id="uploadContent">
+                <div class="upload-area" id="uploadArea">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Drag & drop your image here</p>
+                    <span class="upload-hint">or</span>
+                    <button class="btn btn-outline" id="browseFiles">
+                        Browse Files
+                    </button>
+                    <input type="file" id="imageFile" accept="image/*" class="hidden">
+                </div>
+
+                <div class="url-input hidden" id="urlInput">
+                    <input type="url" id="imageUrl" class="form-control" placeholder="Paste image URL...">
+                    <button class="btn btn-primary" id="insertUrlImage">Insert Image</button>
+                </div>
+            </div>
+
+            <div class="upload-preview hidden" id="uploadPreview">
+                <img id="previewImage" src="" alt="Preview">
+                <div class="preview-actions">
+                    <button class="btn btn-outline" id="changeImage">Change</button>
+                    <button class="btn btn-primary" id="insertImage">Insert into Story</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Auto-save Indicator -->
+<div class="auto-save-indicator" id="autoSaveIndicator">
+    <i class="fas fa-check-circle"></i>
+    <span>All changes saved</span>
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-content">
+        <div class="footer-section">
+            <div class="logo">
+                <i class="fas fa-pen-fancy logo-icon"></i>
+                <h2>InkLink</h2>
+            </div>
+            <p>Share your stories with the world. Connect with readers and writers everywhere.</p>
+        </div>
+        <div class="footer-section">
+            <h3>Resources</h3>
+            <a href="#writing-tips">Writing Tips</a>
+            <a href="#style-guide">Style Guide</a>
+            <a href="#community">Community</a>
+            <a href="#help">Help Center</a>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2023 InkLink. All rights reserved.</p>
+    </div>
+</footer>
+
+<!-- Scripts -->
+<script src="js/api.js"></script>
+<script src="js/create-story.js"></script>
+</body>
+</html>

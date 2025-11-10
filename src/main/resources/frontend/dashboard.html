@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - InkLink</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+<!-- Navigation -->
+<nav class="navbar" id="navbar">
+    <div class="nav-container">
+        <div class="logo">
+            <a href="index.html">
+                <i class="fas fa-pen-fancy logo-icon"></i>
+                <h1>InkLink</h1>
+            </a>
+        </div>
+        <div class="nav-actions">
+            <a href="create-story.html" class="btn btn-primary">
+                <i class="fas fa-plus"></i>
+                New Story
+            </a>
+            <div class="auth-buttons" id="authButtons">
+
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="dashboard-main">
+    <!-- Sidebar -->
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-header">
+            <div class="user-profile">
+                <div class="user-avatar-large" id="userAvatar">
+                    <!-- Dynamically populated -->
+                </div>
+                <div class="user-info">
+                    <h3 id="userName">Loading...</h3>
+                    <p class="user-email" id="userEmail">Loading...</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#overview" class="nav-item active" data-tab="overview">
+                <i class="fas fa-chart-pie"></i>
+                <span>Overview</span>
+            </a>
+            <a href="#stories" class="nav-item" data-tab="stories">
+                <i class="fas fa-book"></i>
+                <span>My Stories</span>
+                <span class="badge" id="storiesCount">0</span>
+            </a>
+            <a href="#analytics" class="nav-item" data-tab="analytics">
+                <i class="fas fa-chart-line"></i>
+                <span>Analytics</span>
+            </a>
+            <a href="#readers" class="nav-item" data-tab="readers">
+                <i class="fas fa-users"></i>
+                <span>Readers</span>
+                <span class="badge" id="followersCount">0</span>
+            </a>
+            <a href="#comments" class="nav-item" data-tab="comments">
+                <i class="fas fa-comments"></i>
+                <span>Comments</span>
+                <span class="badge" id="commentsCount">0</span>
+            </a>
+            <a href="#earnings" class="nav-item" data-tab="earnings">
+                <i class="fas fa-coins"></i>
+                <span>Earnings</span>
+            </a>
+            <a href="#settings" class="nav-item" data-tab="settings">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="quick-stats">
+                <div class="quick-stat">
+                    <span class="stat-value" id="quickViews">0</span>
+                    <span class="stat-label">Views Today</span>
+                </div>
+                <div class="quick-stat">
+                    <span class="stat-value" id="quickLikes">0</span>
+                    <span class="stat-label">New Likes</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Dashboard Content -->
+    <div class="dashboard-content">
+        <!-- Overview Tab -->
+        <div class="tab-content active" id="overview-tab">
+            <!-- Welcome Header -->
+            <div class="welcome-header">
+                <div class="welcome-message">
+                    <h1>Welcome back, <span id="welcomeName">Author</span>! 👋</h1>
+                    <p>Here's what's happening with your stories today.</p>
+                </div>
+                <div class="date-range">
+                    <select id="timeRange" class="time-select">
+                        <option value="today">Today</option>
+                        <option value="week" selected>This Week</option>
+                        <option value="month">This Month</option>
+                        <option value="year">This Year</option>
+                        <option value="all">All Time</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon views">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="totalViews">0</span>
+                        <span class="stat-label">Total Views</span>
+                        <span class="stat-change positive" id="viewsChange">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>0%</span>
+                            </span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon likes">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="totalLikes">0</span>
+                        <span class="stat-label">Total Likes</span>
+                        <span class="stat-change positive" id="likesChange">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>0%</span>
+                            </span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon stories">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="totalStories">0</span>
+                        <span class="stat-label">Published Stories</span>
+                        <span class="stat-change neutral" id="storiesChange">
+                                <i class="fas fa-minus"></i>
+                                <span>0</span>
+                            </span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon followers">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="totalFollowers">0</span>
+                        <span class="stat-label">Followers</span>
+                        <span class="stat-change positive" id="followersChange">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>0%</span>
+                            </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="charts-row">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>Views Over Time</h3>
+                        <div class="chart-actions">
+                            <button class="btn btn-sm btn-outline" data-chart="views">7D</button>
+                            <button class="btn btn-sm btn-outline active" data-chart="views">30D</button>
+                            <button class="btn btn-sm btn-outline" data-chart="views">1Y</button>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="viewsChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>Engagement Metrics</h3>
+                        <div class="chart-actions">
+                            <button class="btn btn-sm btn-outline active" data-chart="engagement">7D</button>
+                            <button class="btn btn-sm btn-outline" data-chart="engagement">30D</button>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="engagementChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity & Top Stories -->
+            <div class="content-row">
+                <div class="activity-card">
+                    <div class="card-header">
+                        <h3>Recent Activity</h3>
+                        <a href="#activity" class="view-all">View All</a>
+                    </div>
+                    <div class="activity-list" id="recentActivity">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+
+                <div class="top-stories-card">
+                    <div class="card-header">
+                        <h3>Top Performing Stories</h3>
+                        <a href="#stories" class="view-all">View All</a>
+                    </div>
+                    <div class="stories-list" id="topStories">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- My Stories Tab -->
+        <div class="tab-content" id="stories-tab">
+            <div class="tab-header">
+                <h2>My Stories</h2>
+                <div class="header-actions">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="storiesSearch" placeholder="Search stories...">
+                    </div>
+                    <select id="storiesFilter" class="filter-select">
+                        <option value="all">All Stories</option>
+                        <option value="published">Published</option>
+                        <option value="draft">Drafts</option>
+                        <option value="scheduled">Scheduled</option>
+                    </select>
+                    <select id="storiesSort" class="filter-select">
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="popular">Most Popular</option>
+                        <option value="title">Title A-Z</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="stories-table-container">
+                <table class="stories-table">
+                    <thead>
+                    <tr>
+                        <th>Story</th>
+                        <th>Status</th>
+                        <th>Views</th>
+                        <th>Likes</th>
+                        <th>Comments</th>
+                        <th>Published</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody id="storiesTableBody">
+                    <!-- Dynamically populated -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="table-footer">
+                <div class="pagination">
+                    <button class="btn btn-outline btn-sm" id="prevPage">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <span class="page-info">Page <span id="currentPage">1</span> of <span id="totalPages">1</span></span>
+                    <button class="btn btn-outline btn-sm" id="nextPage">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div class="tab-content" id="analytics-tab">
+            <div class="tab-header">
+                <h2>Analytics</h2>
+                <div class="header-actions">
+                    <select id="analyticsRange" class="filter-select">
+                        <option value="7">Last 7 Days</option>
+                        <option value="30" selected>Last 30 Days</option>
+                        <option value="90">Last 90 Days</option>
+                        <option value="365">Last Year</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="analytics-grid">
+                <div class="analytics-card wide">
+                    <div class="card-header">
+                        <h3>Performance Overview</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="performanceChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="analytics-card">
+                    <div class="card-header">
+                        <h3>Audience Demographics</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="demographicsChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="analytics-card">
+                    <div class="card-header">
+                        <h3>Traffic Sources</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="sourcesChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="analytics-card">
+                    <div class="card-header">
+                        <h3>Reading Time Distribution</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="readingTimeChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="analytics-card wide">
+                    <div class="card-header">
+                        <h3>Story Performance Comparison</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="storiesComparisonChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Readers Tab -->
+        <div class="tab-content" id="readers-tab">
+            <div class="tab-header">
+                <h2>Reader Insights</h2>
+                <div class="header-actions">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="readersSearch" placeholder="Search readers...">
+                    </div>
+                </div>
+            </div>
+
+            <div class="readers-grid">
+                <div class="readers-card">
+                    <div class="card-header">
+                        <h3>Follower Growth</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="followersChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="readers-stats">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="newFollowers">0</span>
+                            <span class="stat-label">New Followers</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-share"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="shares">0</span>
+                            <span class="stat-label">Shares</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-retweet"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="recurringReaders">0</span>
+                            <span class="stat-label">Recurring Readers</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="followers-list-card">
+                    <div class="card-header">
+                        <h3>Recent Followers</h3>
+                        <a href="#followers" class="view-all">View All</a>
+                    </div>
+                    <div class="followers-list" id="recentFollowers">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comments Tab -->
+        <div class="tab-content" id="comments-tab">
+            <div class="tab-header">
+                <h2>Comments & Feedback</h2>
+                <div class="header-actions">
+                    <select id="commentsFilter" class="filter-select">
+                        <option value="all">All Comments</option>
+                        <option value="unread">Unread</option>
+                        <option value="replied">Replied</option>
+                        <option value="pending">Pending</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="comments-container">
+                <div class="comments-stats">
+                    <div class="stat-card small">
+                        <div class="stat-info">
+                            <span class="stat-value" id="totalComments">0</span>
+                            <span class="stat-label">Total Comments</span>
+                        </div>
+                    </div>
+                    <div class="stat-card small">
+                        <div class="stat-info">
+                            <span class="stat-value" id="unreadComments">0</span>
+                            <span class="stat-label">Unread</span>
+                        </div>
+                    </div>
+                    <div class="stat-card small">
+                        <div class="stat-info">
+                            <span class="stat-value" id="avgRating">0.0</span>
+                            <span class="stat-label">Avg Rating</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="comments-list" id="commentsList">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Earnings Tab -->
+        <div class="tab-content" id="earnings-tab">
+            <div class="tab-header">
+                <h2>Earnings & Revenue</h2>
+                <div class="header-actions">
+                    <select id="earningsRange" class="filter-select">
+                        <option value="month">This Month</option>
+                        <option value="quarter">This Quarter</option>
+                        <option value="year" selected>This Year</option>
+                        <option value="all">All Time</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="earnings-grid">
+                <div class="earnings-card main">
+                    <div class="card-header">
+                        <h3>Revenue Overview</h3>
+                    </div>
+                    <div class="earnings-display">
+                        <div class="total-earnings">
+                            <span class="amount" id="totalEarnings">$0.00</span>
+                            <span class="label">Total Earnings</span>
+                        </div>
+                        <div class="earnings-change positive">
+                            <i class="fas fa-arrow-up"></i>
+                            <span id="earningsChange">0%</span> from last period
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="earningsChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="earnings-breakdown">
+                    <div class="breakdown-card">
+                        <h4>Revenue Sources</h4>
+                        <div class="breakdown-list" id="revenueSources">
+                            <!-- Dynamically populated -->
+                        </div>
+                    </div>
+
+                    <div class="breakdown-card">
+                        <h4>Top Earning Stories</h4>
+                        <div class="breakdown-list" id="topEarningStories">
+                            <!-- Dynamically populated -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="payout-card">
+                    <div class="card-header">
+                        <h3>Next Payout</h3>
+                    </div>
+                    <div class="payout-info">
+                        <div class="payout-amount">
+                            <span class="amount" id="nextPayout">$0.00</span>
+                            <span class="label">Estimated Payout</span>
+                        </div>
+                        <div class="payout-date">
+                            <i class="fas fa-calendar"></i>
+                            <span id="payoutDate">-- -- ----</span>
+                        </div>
+                        <button class="btn btn-primary" id="requestPayout">
+                            Request Payout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div class="tab-content" id="settings-tab">
+            <div class="tab-header">
+                <h2>Account Settings</h2>
+            </div>
+
+            <div class="settings-grid">
+                <div class="settings-card">
+                    <h3>Profile Settings</h3>
+                    <form class="settings-form" id="profileForm">
+                        <div class="form-group">
+                            <label for="displayName">Display Name</label>
+                            <input type="text" id="displayName" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="userBio">Bio</label>
+                            <textarea id="userBio" class="form-control" rows="4" placeholder="Tell readers about yourself..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="websiteUrl">Website</label>
+                            <input type="url" id="websiteUrl" class="form-control" placeholder="https://...">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Profile</button>
+                    </form>
+                </div>
+
+                <div class="settings-card">
+                    <h3>Notification Preferences</h3>
+                    <div class="notification-settings">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="notifyComments" checked>
+                            <span class="checkmark"></span>
+                            New comments on my stories
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="notifyLikes" checked>
+                            <span class="checkmark"></span>
+                            New likes on my stories
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="notifyFollowers" checked>
+                            <span class="checkmark"></span>
+                            New followers
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="notifyMentions">
+                            <span class="checkmark"></span>
+                            When I'm mentioned in comments
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="notifyNewsletter" checked>
+                            <span class="checkmark"></span>
+                            Platform updates and news
+                        </label>
+                    </div>
+                </div>
+
+                <div class="settings-card">
+                    <h3>Writing Preferences</h3>
+                    <div class="form-group">
+                        <label for="defaultCategory">Default Category</label>
+                        <select id="defaultCategory" class="form-control">
+                            <option value="">Select category</option>
+                            <option value="FICTION">Fiction</option>
+                            <option value="NON_FICTION">Non-Fiction</option>
+                            <option value="POETRY">Poetry</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="defaultLanguage">Default Language</label>
+                        <select id="defaultLanguage" class="form-control">
+                            <option value="ENGLISH">English</option>
+                            <option value="SPANISH">Spanish</option>
+                            <option value="FRENCH">French</option>
+                        </select>
+                    </div>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="autoSaveDrafts" checked>
+                        <span class="checkmark"></span>
+                        Auto-save drafts
+                    </label>
+                </div>
+
+                <div class="settings-card danger">
+                    <h3>Danger Zone</h3>
+                    <div class="danger-actions">
+                        <button class="btn btn-outline" id="exportDataBtn">
+                            <i class="fas fa-download"></i>
+                            Export My Data
+                        </button>
+                        <button class="btn btn-danger" id="deleteAccountBtn">
+                            <i class="fas fa-trash"></i>
+                            Delete Account
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="js/api.js"></script>
+<script src="js/dashboard.js"></script>
+<!-- Add this right before closing </body> tag in dashboard.html -->
+<script>
+    // Debug authentication
+    console.log('🔄 Dashboard loading - checking session...');
+    fetch('/api/auth/me', {
+        method: 'GET',
+        credentials: 'include'
+    })
+        .then(response => {
+            console.log('🔍 Auth check response status:', response.status);
+            if (!response.ok) {
+                console.log('❌ Session invalid, redirecting to login');
+                window.location.href = 'login.html';
+                return Promise.reject('Invalid session');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('✅ Auth check result:', data);
+            if (data.success) {
+                console.log('🎉 User authenticated:', data.data.username);
+                // Continue loading dashboard
+            } else {
+                console.log('❌ No valid session');
+                window.location.href = 'login.html';
+            }
+        })
+        .catch(error => {
+            console.error('💥 Auth check failed:', error);
+            window.location.href = 'login.html';
+        });
+</script>
+</body>
+</html>

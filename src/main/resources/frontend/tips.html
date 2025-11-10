@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Writing Tips - InkLink</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-red: #e63946;
+            --secondary-orange: #f77f00;
+            --accent-yellow: #ffd166;
+            --light-yellow: #fff9e6;
+            --white: #ffffff;
+            --dark: #333333;
+            --light-gray: #f5f5f5;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-yellow);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Header Styles */
+        header {
+            background: linear-gradient(135deg, var(--primary-red), var(--secondary-orange));
+            color: var(--white);
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-decoration: none;
+            color: var(--white);
+            animation: fadeInDown 1s ease;
+        }
+
+        .logo i {
+            color: var(--accent-yellow);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--white);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-yellow);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--accent-yellow);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--primary-red), var(--secondary-orange));
+            color: var(--white);
+            padding: 6rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 Z" fill="rgba(255,255,255,0.1)"/></svg>');
+            background-size: cover;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            animation: fadeInUp 1s ease;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            animation: fadeInUp 1s ease 0.2s both;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background-color: var(--accent-yellow);
+            color: var(--dark);
+            padding: 0.8rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            animation: fadeInUp 1s ease 0.4s both;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        /* Tips Section */
+        .tips-section {
+            padding: 5rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+            color: var(--primary-red);
+            margin-bottom: 1rem;
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-title h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary-red), var(--secondary-orange));
+            border-radius: 2px;
+        }
+
+        .section-title p {
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .tips-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .tip-card {
+            background-color: var(--white);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tip-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .tip-header {
+            background: linear-gradient(135deg, var(--primary-red), var(--secondary-orange));
+            color: var(--white);
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .tip-icon {
+            width: 50px;
+            height: 50px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .tip-header h3 {
+            font-size: 1.5rem;
+        }
+
+        .tip-content {
+            padding: 1.5rem;
+            flex-grow: 1;
+        }
+
+        .tip-content p {
+            margin-bottom: 1rem;
+        }
+
+        .tip-content ul {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .tip-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Writing Resources */
+        .resources-section {
+            padding: 5rem 2rem;
+            background-color: var(--white);
+            border-radius: 20px;
+            margin: 0 2rem 5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .resources-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .resource-card {
+            text-align: center;
+            padding: 2rem;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            background-color: var(--light-yellow);
+        }
+
+        .resource-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .resource-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1.5rem;
+            background: linear-gradient(135deg, var(--primary-red), var(--secondary-orange));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 2rem;
+        }
+
+        .resource-card h3 {
+            color: var(--primary-red);
+            margin-bottom: 1rem;
+        }
+
+        /* Writing Challenges */
+        .challenges-section {
+            padding: 5rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .challenge-card {
+            background: linear-gradient(135deg, var(--primary-red), var(--secondary-orange));
+            color: var(--white);
+            border-radius: 15px;
+            padding: 3rem;
+            margin-bottom: 3rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .challenge-card h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .challenge-card h3 i {
+            color: var(--accent-yellow);
+        }
+
+        .challenge-card p {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        .challenge-steps {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .challenge-step {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background-color: var(--accent-yellow);
+            color: var(--dark);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin: 0 auto 1rem;
+        }
+
+        /* Community Section */
+        .community-section {
+            padding: 5rem 2rem;
+            background-color: var(--light-gray);
+            text-align: center;
+        }
+
+        .community-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .community-content h2 {
+            color: var(--primary-red);
+            margin-bottom: 1.5rem;
+        }
+
+        .community-content p {
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        .community-stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 3rem;
+        }
+
+        .community-stat {
+            text-align: center;
+        }
+
+        .community-stat h3 {
+            font-size: 2.5rem;
+            color: var(--secondary-orange);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--dark);
+            color: var(--white);
+            padding: 4rem 2rem 2rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 3rem;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .footer-logo i {
+            color: var(--accent-yellow);
+        }
+
+        .footer-links h4 {
+            color: var(--accent-yellow);
+            margin-bottom: 1.5rem;
+            font-size: 1.2rem;
+        }
+
+        .footer-links ul {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-links a {
+            color: #ccc;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent-yellow);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            color: var(--white);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            background-color: var(--accent-yellow);
+            color: var(--dark);
+            transform: translateY(-3px);
+        }
+
+        .copyright {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #aaa;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .animate-on-scroll.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .tips-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .resources-grid, .challenge-steps {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-links {
+                gap: 1.5rem;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .resources-grid, .challenge-steps {
+                grid-template-columns: 1fr;
+            }
+
+            .community-stats {
+                flex-direction: column;
+                gap: 2rem;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Header -->
+<header>
+    <nav class="navbar">
+        <a href="index.html" class="logo">
+            <i class="fas fa-pen-fancy"></i>
+            InkLink
+        </a>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="stories.html">Stories</a>
+            <a href="about.html">About</a>
+            <a href="tips.html" class="active">Writing Tips</a>
+            <a href="contact.html">Contact</a>
+        </div>
+    </nav>
+</header>
+
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>Writing Tips & Resources</h1>
+        <p>Unlock your storytelling potential with our collection of writing advice, exercises, and resources designed to help you craft compelling narratives.</p>
+        <a href="#tips" class="cta-button">Explore Tips</a>
+    </div>
+</section>
+
+<!-- Tips Section -->
+<section class="tips-section" id="tips">
+    <div class="section-title">
+        <h2>Essential Writing Tips</h2>
+        <p>Practical advice to improve your writing skills and engage your readers</p>
+    </div>
+
+    <div class="tips-grid">
+        <div class="tip-card animate-on-scroll">
+            <div class="tip-header">
+                <div class="tip-icon">
+                    <i class="fas fa-pencil-alt"></i>
+                </div>
+                <h3>Show, Don't Tell</h3>
+            </div>
+            <div class="tip-content">
+                <p>Instead of telling readers how a character feels, show it through their actions, dialogue, and body language.</p>
+                <p><strong>Instead of:</strong> "Sarah was nervous."</p>
+                <p><strong>Try:</strong> "Sarah's hands trembled as she fumbled with the keys, her breath catching in her throat."</p>
+                <ul>
+                    <li>Use sensory details</li>
+                    <li>Reveal emotions through actions</li>
+                    <li>Trust your readers to interpret</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="tip-card animate-on-scroll">
+            <div class="tip-header">
+                <div class="tip-icon">
+                    <i class="fas fa-book-open"></i>
+                </div>
+                <h3>Create Compelling Characters</h3>
+            </div>
+            <div class="tip-content">
+                <p>Readers connect with characters who feel real and multidimensional.</p>
+                <ul>
+                    <li>Give characters flaws and strengths</li>
+                    <li>Develop backstories that influence their actions</li>
+                    <li>Create distinct voices for each character</li>
+                    <li>Show character growth throughout the story</li>
+                </ul>
+                <p><strong>Exercise:</strong> Write a scene where your character faces their greatest fear.</p>
+            </div>
+        </div>
+
+        <div class="tip-card animate-on-scroll">
+            <div class="tip-header">
+                <div class="tip-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3>Build Tension & Pace</h3>
+            </div>
+            <div class="tip-content">
+                <p>Master the art of pacing to keep readers engaged from beginning to end.</p>
+                <ul>
+                    <li>Vary sentence length to control rhythm</li>
+                    <li>Use shorter sentences for action scenes</li>
+                    <li>Build tension through unanswered questions</li>
+                    <li>Create stakes that matter to your characters</li>
+                </ul>
+                <p><strong>Tip:</strong> End chapters with hooks that make readers continue.</p>
+            </div>
+        </div>
+
+        <div class="tip-card animate-on-scroll">
+            <div class="tip-header">
+                <div class="tip-icon">
+                    <i class="fas fa-edit"></i>
+                </div>
+                <h3>Edit Ruthlessly</h3>
+            </div>
+            <div class="tip-content">
+                <p>Great writing is rewriting. Learn to kill your darlings and polish your prose.</p>
+                <ul>
+                    <li>Take time between writing and editing</li>
+                    <li>Read your work aloud to catch awkward phrasing</li>
+                    <li>Remove unnecessary words and phrases</li>
+                    <li>Check for consistency in character details</li>
+                </ul>
+                <p><strong>Process:</strong> Write freely first, then edit for clarity and impact.</p>
+            </div>
+        </div>
+
+        <div class="tip-card animate-on-scroll">
+            <div class="tip-header">
+                <div class="tip-icon">
+                    <i class="fas fa-dialogue"></i>
+                </div>
+                <h3>Write Authentic Dialogue</h3>
+            </div>
+            <div class="tip-content">
+                <p>Dialogue should sound natural while moving the story forward.</p>
+                <ul>
+                    <li>Read dialogue aloud to test its flow</li>
+                    <li>Use contractions to sound more natural</li>
+                    <li>Reveal character through speech patterns</li>
+                    <li>Balance dialogue with action and description</li>
+                </ul>
+                <p><strong>Exercise:</strong> Eavesdrop on conversations to study natural speech patterns.</p>
+            </div>
+        </div>
+
+        <div class="tip-card animate-on-scroll">
+            <div class="tip-header">
+                <div class="tip-icon">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <h3>Overcome Writer's Block</h3>
+            </div>
+            <div class="tip-content">
+                <p>Every writer faces creative blocks. Here's how to push through:</p>
+                <ul>
+                    <li>Change your environment or writing tool</li>
+                    <li>Set small, achievable writing goals</li>
+                    <li>Write badly - give yourself permission to create imperfect drafts</li>
+                    <li>Take a walk or do something creative in a different medium</li>
+                </ul>
+                <p><strong>Remember:</strong> You can't edit a blank page.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Writing Resources -->
+<section class="resources-section">
+    <div class="section-title">
+        <h2>Writing Resources</h2>
+        <p>Tools and references to support your writing journey</p>
+    </div>
+
+    <div class="resources-grid">
+        <div class="resource-card animate-on-scroll">
+            <div class="resource-icon">
+                <i class="fas fa-book"></i>
+            </div>
+            <h3>Recommended Reading</h3>
+            <p>Essential books on writing craft, including "On Writing" by Stephen King and "Bird by Bird" by Anne Lamott.</p>
+        </div>
+
+        <div class="resource-card animate-on-scroll">
+            <div class="resource-icon">
+                <i class="fas fa-tools"></i>
+            </div>
+            <h3>Writing Tools</h3>
+            <p>Digital tools for writers, from distraction-free editors to grammar checkers and organizational apps.</p>
+        </div>
+
+        <div class="resource-card animate-on-scroll">
+            <div class="resource-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <h3>Writing Communities</h3>
+            <p>Connect with other writers for feedback, motivation, and support in dedicated writing groups.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Writing Challenges -->
+<section class="challenges-section">
+    <div class="section-title">
+        <h2>Writing Challenges</h2>
+        <p>Push your creative boundaries with our monthly writing challenges</p>
+    </div>
+
+    <div class="challenge-card animate-on-scroll">
+        <h3><i class="fas fa-trophy"></i> July Writing Challenge</h3>
+        <p>This month's theme: <strong>"Unexpected Journey"</strong>. Write a story about a character who embarks on a journey they never planned, discovering something surprising about themselves along the way.</p>
+
+        <div class="challenge-steps">
+            <div class="challenge-step">
+                <div class="step-number">1</div>
+                <p>Write a story between 1,000-3,000 words based on the monthly theme</p>
+            </div>
+            <div class="challenge-step">
+                <div class="step-number">2</div>
+                <p>Submit your story by the end of the month</p>
+            </div>
+            <div class="challenge-step">
+                <div class="step-number">3</div>
+                <p>Winners get featured on our homepage and receive InkLink Premium for 3 months</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Community Section -->
+<section class="community-section">
+    <div class="community-content">
+        <h2>Join Our Writing Community</h2>
+        <p>Connect with fellow writers, share your work, and grow together in our supportive community of storytellers.</p>
+        <a href="signup.html" class="cta-button">Join InkLink</a>
+
+        <div class="community-stats">
+            <div class="community-stat">
+                <h3>15K+</h3>
+                <p>Writers</p>
+            </div>
+            <div class="community-stat">
+                <h3>2.5K+</h3>
+                <p>Writing Groups</p>
+            </div>
+            <div class="community-stat">
+                <h3>50K+</h3>
+                <p>Stories Shared</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer>
+    <div class="footer-content">
+        <div class="footer-about">
+            <div class="footer-logo">
+                <i class="fas fa-pen-fancy"></i>
+                InkLink
+            </div>
+            <p>InkLink is a platform dedicated to connecting storytellers with readers worldwide. Join our community and share your voice today.</p>
+            <div class="social-links">
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-linkedin-in"></i></a>
+            </div>
+        </div>
+
+        <div class="footer-links">
+            <h4>Explore</h4>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="stories.html">Stories</a></li>
+                <li><a href="categories.html">Categories</a></li>
+                <li><a href="featured.html">Featured</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-links">
+            <h4>Resources</h4>
+            <ul>
+                <li><a href="writing-tips.html">Writing Tips</a></li>
+                <li><a href="community.html">Community</a></li>
+                <li><a href="events.html">Events</a></li>
+                <li><a href="help.html">Help Center</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-links">
+            <h4>Company</h4>
+            <ul>
+                <li><a href="about.html">About Us</a></li>
+                <li><a href="careers.html">Careers</a></li>
+                <li><a href="contact.html">Contact</a></li>
+                <li><a href="privacy.html">Privacy Policy</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="copyright">
+        <p>&copy; 2023 InkLink. All rights reserved.</p>
+    </div>
+</footer>
+
+<script>
+    // Animation on scroll
+    document.addEventListener('DOMContentLoaded', function() {
+        const animatedElements = document.querySelectorAll('.animate-on-scroll');
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+
+        animatedElements.forEach(element => {
+            observer.observe(element);
+        });
+
+        // Add some interactive elements
+        const tipCards = document.querySelectorAll('.tip-card');
+        tipCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-10px) scale(1.02)';
+            });
+
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+    });
+</script>
+</body>
+</html>
